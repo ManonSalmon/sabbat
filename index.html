@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le Sabbat des Arcanes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica+SC&family=IM+Fell+DW+Pica:ital@0;1&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout : une table de tirage nocturne. Bandeau des covens en haut, la scène au centre (jeu de cartes ou épreuve), les commandes de la Grande Prêtresse en bas. Un seul univers, sombre, assumé. */
+:root{
+  color-scheme:dark;
+  --nuit:#15101f;      /* fond, encre aubergine */
+  --voile:#221a33;     /* surfaces */
+  --trait:#3d3154;     /* filets */
+  --os:#efe6d2;        /* texte, face des cartes */
+  --cendre:#a99fb8;    /* texte secondaire */
+  --laiton:#d2a857;    /* accent */
+  --sang:#b8433f;      /* malédiction, faux */
+  --sauge:#7fb08a;     /* juste */
+  --titre:"IM Fell DW Pica SC","Iowan Old Style",Georgia,serif;
+  --conte:"IM Fell DW Pica","Iowan Old Style",Georgia,serif;
+  --corps:"Alegreya Sans","Segoe UI",system-ui,sans-serif;
+}
+html,body{min-height:100%}
+body{margin:0}
+[hidden]{display:none!important}
+#phones{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.qr{display:block;width:150px;background:#fff;padding:6px;border-radius:4px}
+.qr svg{display:block;width:100%;height:auto}
+body{background:var(--nuit);color:var(--os);font:400 17px/1.45 var(--corps);
+  background-image:radial-gradient(ellipse at 50% -10%,#2f2247 0,transparent 60%)}
+#app{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:14px 28px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--titre);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.02em}
+h1{font-size:clamp(30px,7vw,52px);color:var(--laiton);line-height:1.05}
+h2{font-size:clamp(22px,4.6vw,34px);line-height:1.15}
+p{margin:0}
+.sub{color:var(--cendre)}
+.eyebrow{font:700 12px/1 var(--corps);letter-spacing:.16em;text-transform:uppercase;color:var(--laiton)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible{outline:2px solid var(--laiton);outline-offset:2px}
+.btn{background:var(--laiton);color:#1b1408;font-weight:700;padding:13px 20px;border-radius:3px;min-height:48px}
+.btn.ghost{background:transparent;color:var(--os);border:1px solid var(--trait)}
+.btn.small{padding:8px 12px;min-height:38px;font-size:15px}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.col{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--voile);border:1px solid var(--trait);padding:16px;border-radius:4px}
+input[type=text]{font:inherit;color:var(--os);background:var(--nuit);border:1px solid var(--trait);border-radius:3px;padding:11px 12px;min-width:0;width:100%}
+
+/* covens */
+.covens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cov{border:1px solid var(--trait);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0;background:var(--voile)}
+.cov.tour{border-color:var(--laiton);box-shadow:0 0 0 1px var(--laiton) inset}
+.cov .nom{font-family:var(--titre);font-size:15px;overflow-wrap:anywhere;line-height:1.15}
+.cov .pts{font:700 26px/1 var(--corps);font-variant-numeric:tabular-nums;color:var(--laiton)}
+.cov .tag{font-size:12px;color:var(--sang);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.cov .tag.ok{color:var(--sauge)}
+.cov .adj{display:flex;gap:6px;margin-top:4px}
+.cov .adj button{width:34px;height:30px;border:1px solid var(--trait);border-radius:3px;color:var(--cendre);font-weight:700}
+
+/* jeu de cartes */
+.deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+.dos{aspect-ratio:2/3;border-radius:5px;border:1px solid var(--laiton);position:relative;
+  background:
+    radial-gradient(circle at 50% 50%,transparent 0 22%,var(--laiton) 22% 24%,transparent 24%),
+    repeating-linear-gradient(45deg,#2b2040 0 6px,#231936 6px 12px);
+  transition:transform .15s}
+.dos::after{content:"";position:absolute;inset:4px;border:1px solid #6b5a3a;border-radius:3px}
+button.dos:hover{transform:translateY(-4px)}
+.dos.vide{border:1px dashed var(--trait);background:none;opacity:.5}
+.dos.vide::after{display:none}
+
+/* retournement */
+.autel{display:flex;flex-direction:column;align-items:center;gap:18px;padding-block:8px}
+.flip{width:min(62vw,260px,38vh);aspect-ratio:2/3;perspective:1200px}
+.flip .in{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:tourne 1.1s .5s cubic-bezier(.5,0,.2,1) both}
+@keyframes tourne{from{transform:rotateY(0) translateY(20px)}to{transform:rotateY(180deg) translateY(0)}}
+.flip .f{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px}
+.flip .dos{aspect-ratio:auto;border-radius:10px}
+.face{transform:rotateY(180deg);background:var(--os);color:#241a12;border:2px solid var(--laiton);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12px 10px;box-shadow:0 0 40px #d2a85755}
+.face .num{font:400 22px/1 var(--titre)}
+.face svg{width:68%;height:auto}
+.face .nom{font:400 clamp(17px,4.4vw,24px)/1.1 var(--titre);text-align:center}
+@media (prefers-reduced-motion:reduce){.flip .in{animation:none;transform:rotateY(180deg)}button.dos:hover{transform:none}}
+
+/* épreuve */
+.epreuve{display:flex;flex-direction:column;gap:14px}
+.entete{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between}
+.question{font:400 clamp(22px,4.8vw,36px)/1.25 var(--conte);text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.opt{border:1px solid var(--trait);border-radius:4px;padding:12px 14px;text-align:left;display:flex;gap:12px;align-items:baseline;background:var(--voile);font-size:19px;min-width:0}
+.opt b{font-family:var(--titre);color:var(--laiton);font-weight:400}
+.opt.bonne{border-color:var(--sauge);background:#22352a}
+.opt.choisie{border-color:var(--laiton)}
+.rep{border-left:3px solid var(--sauge);padding:6px 0 6px 14px}
+.rep strong{font:400 clamp(22px,4.6vw,32px)/1.2 var(--titre);color:var(--sauge);display:block}
+.chrono{font:700 22px/1 var(--corps);font-variant-numeric:tabular-nums;color:var(--cendre)}
+.juges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.juge{border:1px solid var(--trait);border-radius:4px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0;min-height:64px}
+.juge.ok{border-color:var(--sauge);background:#22352a}
+.juge small{color:var(--cendre);overflow-wrap:anywhere}
+.barre{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-top:1px solid var(--trait);padding-top:14px}
+details{border:1px solid var(--trait);border-radius:4px;padding:10px 14px}
+summary{cursor:pointer;font-weight:700}
+ol,ul{margin:8px 0 0;padding-left:22px}
+.rang{display:flex;justify-content:space-between;gap:12px;align-items:baseline;border-bottom:1px solid var(--trait);padding:10px 0;font-size:20px}
+.rang:first-child{font-size:28px;color:var(--laiton)}
+@media (max-width:480px){.cov .pts{font-size:22px}.opt{font-size:17px}}
+/* cartes dorées */
+.dos{background:#171226 var(--dos) center/100% 100% no-repeat}
+.dos::after{display:none}
+.face{padding:0;overflow:hidden;background:#171226;border:0}
+.face svg{width:100%;height:100%;display:block}
+</style></head><body>
+<div id="app"><p class="sub">Les cartes se mélangent…</p></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+/* Configuration Firebase : coller ici le bloc fourni par la console Firebase (null = jeu sans téléphones) */
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyCba8tm38JCqPF2fZfNgOJZ9aJyRDRb1bw",
+  authDomain:"le-sabbat-des-arcanes.firebaseapp.com",
+  databaseURL:"https://le-sabbat-des-arcanes-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"le-sabbat-des-arcanes",
+  storageBucket:"le-sabbat-des-arcanes.firebasestorage.app",
+  messagingSenderId:"989147254890",
+  appId:"1:989147254890:web:3188e1c2d9106db47ffa13"
+};
+
+/* ---------- Arcanes ---------- */
+const S1='fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const ARC={
+ pap:{n:'II',nom:'La Papesse',sub:'Savoir réel',svg:`<path ${S1} d="M10 50Q50 15 90 50Q50 85 10 50Z"/><circle ${S1} cx="50" cy="50" r="11"/>`},
+ lun:{n:'XVIII',nom:'La Lune',sub:'Contes et légendes',svg:`<path ${S1} d="M62 12A40 40 0 1 0 62 88A30 30 0 1 1 62 12Z"/>`},
+ eto:{n:'XVII',nom:"L'Étoile",sub:'Œuvres de fiction',svg:`<polygon ${S1} points="50,8 58,42 92,50 58,58 50,92 42,58 8,50 42,42"/>`},
+ jug:{n:'XX',nom:'Le Jugement',sub:'Réel ou inventé',svg:`<path ${S1} d="M50 14V86M20 30H80M20 30L10 56M20 30L30 56M80 30L70 56M80 30L90 56M8 56Q20 72 32 56ZM68 56Q80 72 92 56ZM36 86H64"/>`},
+ bat:{n:'I',nom:'Le Bateleur',sub:'Épreuve sonore',svg:`<path ${S1} d="M50 50C40 30 12 30 12 50C12 70 40 70 50 50C60 30 88 30 88 50C88 70 60 70 50 50Z"/>`},
+ mat:{n:'0',nom:'Le Mat',sub:'Défi',svg:`<circle ${S1} cx="50" cy="56" r="28"/><circle ${S1} cx="50" cy="16" r="6"/><circle ${S1} cx="18" cy="30" r="6"/><circle ${S1} cx="82" cy="30" r="6"/>`},
+ dia:{n:'XV',nom:'Le Diable',sub:'Malédiction',svg:`<circle ${S1} cx="50" cy="50" r="44"/><polygon ${S1} points="50,90 26.5,17.6 88,62.4 12,62.4 73.5,17.6"/>`},
+ rou:{n:'X',nom:'La Roue de Fortune',sub:'Coup du sort',svg:`<circle ${S1} cx="50" cy="50" r="38"/><circle ${S1} cx="50" cy="50" r="8"/><path ${S1} d="M50 12V88M12 50H88M23 23L77 77M77 23L23 77"/>`}
+};
+/* ---------- Dessin des cartes : or fin sur fond nuit ---------- */
+const G='#d9b15f',N='#171226',FELL="'IM Fell DW Pica SC',Georgia,serif";
+const xy=(cx,cy,r,a)=>[(cx+r*Math.cos(a)).toFixed(1),(cy+r*Math.sin(a)).toFixed(1)];
+const rays=(cx,cy,r,n,l1,l2)=>{let s='';for(let i=0;i<n;i++){const a=i*2*Math.PI/n,p=xy(cx,cy,r,a),q=xy(cx,cy,r+(i%2?l1:l2),a);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`}return `<g stroke="${G}" stroke-width=".7">${s}</g>`};
+const st=(x,y,r)=>`<path d="M${x} ${y-r}Q${x} ${y} ${x+r} ${y}Q${x} ${y} ${x} ${y+r}Q${x} ${y} ${x-r} ${y}Q${x} ${y} ${x} ${y-r}Z" fill="${G}"/>`;
+const ln=(d,w)=>`<path d="${d}" fill="none" stroke="${G}" stroke-width="${w||1}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ci=(x,y,r,fill,w)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill?G:'none'}" stroke="${G}" stroke-width="${w||1}"/>`;
+const waves=()=>[222,234,246].map((y,i)=>ln(`M${36+i*2} ${y}q${16-i*.5} -9 ${32-i} 0t${32-i} 0t${32-i} 0t${32-i} 0`,1.1-i*.25)).join('');
+const stars=()=>st(48,74,5)+st(152,70,4)+st(44,176,4)+st(158,182,6)+st(60,204,3)+st(140,208,3);
+function cadre(H){
+  let s=`<rect width="200" height="${H}" fill="${N}"/><rect x="8" y="8" width="184" height="${H-16}" rx="5" fill="none" stroke="${G}" stroke-width="1.6"/><rect x="14" y="14" width="172" height="${H-28}" rx="2" fill="none" stroke="${G}" stroke-width=".6"/>`;
+  [[14,14,1,1],[186,14,-1,1],[14,H-14,1,-1],[186,H-14,-1,-1]].forEach(([x,y,a,b])=>{const f=a*b>0?0:1;s+=ln(`M${x+18*a} ${y}A18 18 0 0 ${f} ${x} ${y+18*b}M${x+10*a} ${y}A10 10 0 0 ${f} ${x} ${y+10*b}`,.8)+ci(x+22*a,y+22*b,1.6,true,0)});
+  return s;
+}
+const ART={
+ lun:()=>rays(100,120,46,56,9,16)+ci(100,120,43,false,.8)+`<path d="M112 82A40 40 0 1 0 112 158A31 31 0 1 1 112 82Z" fill="${G}"/><path d="M92 108q-5 3 0 6M90 132q4 3 8 0" fill="none" stroke="${N}" stroke-width="1.4" stroke-linecap="round"/>`+st(122,112,9)+st(134,134,4)+stars()+waves(),
+ eto:()=>{let p='';for(let i=0;i<16;i++)p+=xy(100,122,i%2?12:(i%4?26:42),i*Math.PI/8-Math.PI/2).join(',')+' ';
+   return rays(100,122,48,48,7,13)+`<polygon points="${p}" fill="${G}"/>`+`<circle cx="100" cy="122" r="5" fill="${N}"/>`+st(52,92,6)+st(150,96,5)+st(58,160,5)+st(146,164,6)+st(100,190,5)+st(74,196,3)+st(126,198,3)+waves()},
+ pap:()=>ln("M46 96V250M54 96V250M146 96V250M154 96V250",.8)+ln("M42 96h16M142 96h16M42 250h16M142 250h16",1.4)+rays(100,130,36,40,6,11)+ln("M68 130Q100 102 132 130Q100 158 68 130Z",1.3)+`<path d="M68 130Q100 102 132 130Q100 158 68 130Z" fill="${N}"/>`+ln("M68 130Q100 102 132 130Q100 158 68 130Z",1.3)+ci(100,130,11,false,1.1)+ci(100,130,4,true,0)+st(100,78,6)+ln("M64 200q18-9 36 0q18-9 36 0v38q-18-9-36 0q-18-9-36 0ZM100 200v38",1.2)+ln("M72 211q10-4 20 0M72 221q10-4 20 0M108 211q10-4 20 0M108 221q10-4 20 0",.6),
+ jug:()=>rays(100,84,11,24,9,17)+st(100,84,8)+ln("M100 100V238M60 116H140M60 116L44 168M60 116L76 168M140 116L124 168M140 116L156 168",1)+ln("M40 168Q60 194 80 168ZM120 168Q140 194 160 168Z",1.3)+ln("M82 238h36M90 245h20",1.3)+ci(100,116,4,true,0)+st(44,84,4)+st(156,84,4)+st(100,214,3)+st(50,214,3)+st(150,214,3),
+ bat:()=>rays(100,86,36,24,5,9)+ln("M100 86C92 70 70 70 70 86C70 102 92 102 100 86C108 70 130 70 130 86C130 102 108 102 100 86Z",1.5)+ln("M100 122V204",1.8)+st(100,116,8)+ln("M44 212H156M52 212V252M148 212V252M44 218H156",1)+ci(66,196,10,false,1.1)+st(66,196,6)+ln("M124 184h22q0 14-11 16q-11-2-11-16ZM135 200v8M128 210h14",1.1)+st(46,150,4)+st(154,150,4),
+ mat:()=>rays(100,150,60,40,5,10)+ln("M58 190L66 132L84 166L100 120L116 166L134 132L142 190Z",1.5)+`<path d="M58 190L66 132L84 166L100 120L116 166L134 132L142 190Z" fill="${N}" stroke="${G}" stroke-width="1.5" stroke-linejoin="round"/>`+ln("M56 198H144",1.5)+ci(66,127,5,true,0)+ci(100,114,6,true,0)+ci(134,127,5,true,0)+st(100,172,7)+ci(78,182,2,true,0)+ci(122,182,2,true,0)+ln("M100 252q-26-10 0-20q20-8 0-16",.8)+st(46,84,4)+st(154,84,4),
+ dia:()=>{const p=[0,1,2,3,4].map(i=>xy(100,132,44,Math.PI/2+i*4*Math.PI/5).join(',')).join(' ');
+   return rays(100,132,50,48,6,11)+ci(100,132,46,false,1.2)+`<polygon points="${p}" fill="none" stroke="${G}" stroke-width="1.3" stroke-linejoin="round"/>`+ci(100,132,5,true,0)+ln("M60 252q6-16 0-24q13 7 11 24M95 252q6-20 0-30q15 9 11 30M130 252q6-16 0-24q13 7 11 24",1)+st(44,70,4)+st(156,70,4)},
+ rou:()=>{let s=rays(100,130,54,48,6,11)+ci(100,130,48,false,1.2)+ci(100,130,38,false,.7)+ci(100,130,9,false,1.2);
+   for(let i=0;i<8;i++){const a=i*Math.PI/4,p=xy(100,130,9,a),q=xy(100,130,48,a),m=xy(100,130,48,a);s+=ln(`M${p[0]} ${p[1]}L${q[0]} ${q[1]}`,.9)+ci(m[0],m[1],3.5,true,0)}
+   return s+st(100,130,5)+ln("M70 248h60",.8)+st(100,248,5)+st(44,70,4)+st(156,70,4)+st(44,214,3)+st(156,214,3)}
+};
+function cardSvg(k){const a=ARC[k],nom=a.nom.toUpperCase(),long=nom.length>12;
+  return `<svg viewBox="0 0 200 320" role="img" aria-label="${esc(a.nom)}">`+cadre(320)+ln("M30 262V120A70 70 0 0 1 170 120V262",1)+ln("M36 262V120A64 64 0 0 1 164 120V262",.5)+ART[k]()
+   +ln("M70 274h60",.8)+`<path d="M96 274l4-4 4 4-4 4Z" fill="${N}" stroke="${G}" stroke-width=".8"/>`
+   +`<text x="100" y="40" text-anchor="middle" font-size="15" fill="${G}" font-family="${FELL}" letter-spacing="4">${a.n}</text>`+ln("M62 46h76",.5)
+   +`<text x="100" y="297" text-anchor="middle" font-size="${long?12:16}" fill="${G}" font-family="${FELL}" letter-spacing="${long?2:6}">${esc(nom)}</text></svg>`}
+/* version lisible : illustration réduite, nom en grand (remplace la définition précédente) */
+function cardSvg(k){const a=ARC[k],nom=a.nom.toUpperCase(),C='#f6ead0';
+  const tx=(y,t,s,ls)=>`<text x="100" y="${y}" text-anchor="middle" font-size="${s}" fill="${C}" font-family="${FELL}" letter-spacing="${ls}">${esc(t)}</text>`;
+  const titre=k==='rou'?tx(264,'LA ROUE',22,2)+tx(290,'DE FORTUNE',22,2):tx(280,nom,nom.length<=8?28:22,nom.length<=8?3:1.5);
+  return `<svg viewBox="0 0 200 320" role="img" aria-label="${esc(a.nom)}">`+cadre(320)
+   +`<text x="100" y="38" text-anchor="middle" font-size="16" fill="${G}" font-family="${FELL}" letter-spacing="4">${a.n}</text>`
+   +`<g transform="translate(100 46) scale(.8) translate(-100 -50)">`+ln("M30 262V120A70 70 0 0 1 170 120V262",1)+ln("M36 262V120A64 64 0 0 1 164 120V262",.5)+ART[k]()+`</g>`
+   +ln("M40 232h120",.8)+`<path d="M95 232l5-5 5 5-5 5Z" fill="${N}" stroke="${G}" stroke-width=".9"/>`+titre+`</svg>`}
+(function(){const dos=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" preserveAspectRatio="none">`+cadre(300)+ln("M100 44L172 150L100 256L28 150Z",1)+ln("M100 62L160 150L100 238L40 150Z",.5)+rays(100,150,30,32,8,15)+ci(100,150,27,false,1)+`<path d="M107 128A24 24 0 1 0 107 172A18 18 0 1 1 107 128Z" fill="${G}"/>`+st(100,34,5)+st(100,266,5)+st(46,70,4)+st(154,70,4)+st(46,230,4)+st(154,230,4)+`</svg>`;
+  document.documentElement.style.setProperty('--dos',`url("data:image/svg+xml,${encodeURIComponent(dos)}")`)})();
+
+/* ---------- Cartes ----------
+ t: qcm (r = index de la bonne option) | libre (r = réponses acceptées) | defi | sort (malédiction, cible à choisir)
+ p: points, x: explication affichée à la révélation, s: secondes */
+const CARDS=[
+ {a:'pap',t:'qcm',p:1,q:"Quelle fête celtique est l'ancêtre d'Halloween ?",o:['Beltane','Samhain','Yule'],r:1,x:"Samhain marquait la fin des récoltes et l'entrée dans la saison sombre."},
+ {a:'pap',t:'qcm',p:2,q:"Combien de cartes compte un jeu de tarot divinatoire complet ?",o:['22','56','78','108'],r:2,x:"22 arcanes majeurs et 56 arcanes mineurs."},
+ {a:'pap',t:'libre',p:1,q:"Comment appelle-t-on l'étoile à cinq branches utilisée comme symbole de protection ?",r:['pentagramme','pentacle'],rt:'Le pentagramme',x:"Inscrit dans un cercle, on parle de pentacle."},
+ {a:'pap',t:'libre',p:1,q:"Quelle plante, dont la racine évoque une silhouette humaine, était réputée crier quand on l'arrache ?",r:['mandragore'],rt:'La mandragore',x:""},
+ {a:'pap',t:'qcm',p:1,q:"Dans la wicca, comment s'appelle le recueil où l'on consigne sorts et rituels ?",o:['Le Livre des Ombres','Le Nécronomicon','Le Codex Gigas'],r:0,x:"Le Nécronomicon est une invention de Lovecraft."},
+ {a:'pap',t:'libre',p:2,q:"Quel écrivain public parisien du XIVe siècle passe pour avoir découvert la pierre philosophale ?",r:['flamel'],rt:'Nicolas Flamel',x:"Sa réputation d'alchimiste est née bien après sa mort."},
+
+ {a:'lun',t:'libre',p:1,q:"Dans quel conte une sorcière vit-elle dans une maison en pain d'épices ?",r:['hansel','gretel'],rt:'Hansel et Gretel',x:""},
+ {a:'lun',t:'qcm',p:1,q:"Sur quoi repose l'isba de Baba Yaga ?",o:['Des pattes de poulet','Le dos d\'une tortue','Des roues de charrette'],r:0,x:"Elle tourne sur elle-même pour faire face au visiteur."},
+ {a:'lun',t:'libre',p:1,q:"Quelle fée est la demi-sœur du roi Arthur ?",r:['morgan'],rt:'Morgane',x:""},
+ {a:'lun',t:'qcm',p:2,q:"Dans le folklore écossais, en quel animal se transforme une selkie ?",o:['Un cygne','Un phoque','Un renard'],r:1,x:"Elle quitte sa peau de phoque pour prendre forme humaine."},
+ {a:'lun',t:'libre',p:1,q:"Quelle forêt bretonne est associée à Merlin et à la fée Viviane ?",r:['broceliande'],rt:'Brocéliande',x:""},
+ {a:'lun',t:'qcm',p:1,q:"Dans La Belle au bois dormant, sur quoi la princesse se pique-t-elle le doigt ?",o:['Une épine de rose','Un fuseau','Une aiguille à broder'],r:1,x:"Le fuseau d'un rouet."},
+
+ {a:'eto',t:'libre',p:1,q:"Comment s'appelle le chat de Sabrina ?",r:['salem'],rt:'Salem',x:""},
+ {a:'eto',t:'qcm',p:1,q:"Dans Kiki la petite sorcière, quel animal l'accompagne ?",o:['Un hibou','Un chat noir','Un crapaud'],r:1,x:"Il s'appelle Jiji."},
+ {a:'eto',t:'libre',p:1,q:"Dans Le Seigneur des Anneaux, combien d'anneaux ont été donnés aux Hommes ?",r:['neuf','9'],rt:'Neuf',x:"Trois pour les Elfes, sept pour les Nains, neuf pour les Hommes."},
+ {a:'eto',t:'qcm',p:2,q:"Harry Potter : de quel bois est faite la baguette de Harry ?",o:['Houx','If','Sureau','Chêne'],r:0,x:"Houx et plume de phénix. L'if, c'est celle de Voldemort."},
+ {a:'eto',t:'qcm',p:2,q:"Harry Potter : combien d'escaliers compte Poudlard ?",o:['42','97','142','394'],r:2,x:"142, d'après le premier tome."},
+ {a:'eto',t:'qcm',p:1,q:"Charmed : quel est le premier pouvoir de Piper ?",o:['Figer le temps','La télékinésie','Les prémonitions'],r:0,x:"La télékinésie pour Prue, les prémonitions pour Phoebe."},
+ {a:'eto',t:'libre',p:1,q:"The Witcher : comment s'appelle la jument de Geralt ?",r:['ablette','roach'],rt:'Ablette (Roach en VO)',x:""},
+ {a:'eto',t:'qcm',p:1,q:"Dans quelle ville Buffy chasse-t-elle les vampires ?",o:['Mystic Falls','Sunnydale','Riverdale'],r:1,x:""},
+ {a:'eto',t:'qcm',p:1,q:"Ma sorcière bien-aimée : que remue Samantha pour jeter un sort ?",o:['Les oreilles','Le nez','Les doigts'],r:1,x:""},
+ {a:'eto',t:'qcm',p:1,q:"Fourth Wing : quelle créature chevauchent les cavaliers de Basgiath ?",o:['Des griffons','Des dragons','Des phénix'],r:1,x:""},
+ {a:'eto',t:'libre',p:2,q:"Un palais d'épines et de roses : de quelle cour Rhysand est-il le Grand Seigneur ?",r:['nuit','night'],rt:'La Cour de la Nuit',x:""},
+ {a:'eto',t:'libre',p:2,q:"Le Château ambulant : comment s'appelle le démon du feu ?",r:['calcifer'],rt:'Calcifer',x:""},
+
+ {a:'jug',t:'qcm',p:1,q:"« Au Moyen Âge, des animaux ont été convoqués à de vrais procès, avec un avocat. »",o:['Réel','Inventé'],r:0,x:"Réel. Des cochons, des rats et même des charançons ont eu leur procès."},
+ {a:'jug',t:'qcm',p:1,q:"« Le mot abracadabra apparaît déjà dans un traité de médecine romain. »",o:['Réel','Inventé'],r:0,x:"Réel. Au IIIe siècle, on le prescrivait en amulette contre la fièvre."},
+ {a:'jug',t:'qcm',p:1,q:"« On dessinait déjà des sorcières à cheval sur un balai au XVe siècle. »",o:['Réel','Inventé'],r:0,x:"Réel. Bien avant le cinéma et les dessins animés."},
+ {a:'jug',t:'qcm',p:1,q:"« Le vendredi 13 porte malheur dans le monde entier. »",o:['Réel','Inventé'],r:1,x:"Inventé. En Espagne et en Grèce on craint le mardi 13, en Italie le vendredi 17."},
+ {a:'jug',t:'qcm',p:2,q:"« Une ville de Nouvelle-Zélande a salarié un sorcier officiel pendant plus de vingt ans. »",o:['Réel','Inventé'],r:0,x:"Réel. Christchurch a payé son sorcier jusqu'en 2021."},
+
+ {a:'bat',t:'defi',s:0,q:"Blind test, premier mouvement. La Grande Prêtresse lance les pistes 1 à 3 de la playlist.",x:"1 point par titre au premier coven qui nomme l'œuvre.",rt:"1. American Horror Story · 2. Le Seigneur des Anneaux (Les Deux Tours) · 3. The Witcher"},
+ {a:'bat',t:'defi',s:0,q:"Blind test, second mouvement. La Grande Prêtresse lance les pistes 4 à 6 de la playlist.",x:"1 point par titre au premier coven qui nomme l'œuvre.",rt:"4. Harry Potter (La Chambre des secrets) · 5. Ma sorcière bien-aimée · 6. Buffy contre les vampires"},
+ {a:'bat',t:'defi',s:0,q:"Ping-pong ensorcelé : à tour de rôle, chaque coven chante un bout de chanson contenant « nuit », « lune », « magie » ou « diable », en français ou en anglais. Dix secondes pour trouver, pas de redite.",x:"Le premier coven qui sèche est éliminé, puis le deuxième. Le dernier debout gagne 2 points."},
+ {a:'bat',t:'defi',s:60,q:"Le coven qui a tiré choisit un générique ou une musique de film fantastique, et le fredonne. Sans paroles.",x:"Si un autre coven trouve : 2 points pour les chanteurs, 1 point pour ceux qui ont trouvé."},
+
+ {a:'mat',t:'defi',s:60,q:"Sur papier : le coven qui a tiré choisit une créature fantastique et la dessine en 60 secondes.",x:"Si un autre coven la reconnaît : 2 points pour les dessinateurs, 1 point pour ceux qui ont trouvé."},
+ {a:'mat',t:'defi',s:60,q:"Le coven qui a tiré choisit un conte et le mime. Pas un mot, pas un bruit.",x:"Si un autre coven trouve : 2 points pour les mimes, 1 point pour ceux qui ont trouvé."},
+ {a:'mat',t:'defi',s:60,q:"Incantation : le coven qui a tiré a 60 secondes pour écrire une formule magique en rimes contre un tracas du quotidien, puis la déclame.",x:"Chaque autre coven accorde 1 point s'il est envoûté. 2 points maximum."},
+
+ {a:'dia',t:'sort',q:"Le coven qui a tiré maudit un rival : à la prochaine question, il n'aura que 10 secondes pour répondre.",m:"10 secondes"},
+ {a:'dia',t:'sort',q:"Le coven qui a tiré maudit un rival : à la prochaine question, une erreur lui coûtera 1 point.",m:"l'erreur coûte 1 point"},
+ {a:'dia',t:'sort',q:"Le coven qui a tiré maudit un rival : à la prochaine question, un seul de ses membres répondra, sans consulter les autres.",m:"seul face à la question"},
+
+ {a:'rou',t:'defi',s:0,q:"La Roue tourne en votre faveur : volez 2 points au coven de votre choix.",x:"La Grande Prêtresse ajuste les scores."},
+ {a:'rou',t:'defi',s:0,q:"La Roue vous sourit : 3 points tombent du ciel pour le coven qui a tiré.",x:"La Grande Prêtresse ajuste les scores."},
+ {a:'rou',t:'defi',s:0,q:"La Roue s'emballe : le coven qui a tiré échange son score avec le dernier. S'il est déjà dernier, il gagne 2 points.",x:"La Grande Prêtresse ajuste les scores."}
+];
+const FINAL={a:'rou',t:'libre',p:0,q:"Harry Potter : citez les sept Horcruxes.",r:['nagini'],rt:"Le journal, la bague, le médaillon, la coupe, le diadème, Nagini et Harry",x:"Il faut les sept pour gagner sa mise."};
+const EMB=['☾','✶','♄','☿','♆','♃'];
+const PLAYLIST=["Harry Potter, Hedwig's Theme","Charmed, générique (How Soon Is Now?)","Le Château ambulant, Merry-Go-Round of Life","Buffy contre les vampires, générique","The Witcher, Toss a Coin to Your Witcher","Le Seigneur des Anneaux, Concerning Hobbits"];
+
+/* ---------- Outils ---------- */
+const app=document.getElementById('app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const L='ABCD';
+let db=null,base='',code='',isHost=true,S=null,timer=null,PL={},pubG=null,showQR=false;
+
+function fresh(){
+  const order=CARDS.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+  return {ph:'setup',cov:[{n:'Coven de la Lune',e:0,s:0},{n:'Coven des Ronces',e:1,s:0},{n:'Coven du Corbeau',e:2,s:0}],
+    order,drawn:order.map(()=>0),turn:0,cur:null,n:0,qid:Math.floor(Math.random()*1e6),ok:[false,false,false],ans:{},curse:null,bets:[0,0,0],fin:false,tEnd:0};
+}
+function card(){return S.fin?FINAL:CARDS[S.order[S.cur]]}
+function judge(c,a){
+  if(a==null||a==='')return false;
+  if(c.t==='qcm')return Number(a)===c.r;
+  const n=norm(a);return c.r.some(r=>n===r||n.split(' ').includes(r)||n.includes(r));
+}
+function answerText(c){return c.t==='qcm'?c.o[c.r]:(c.rt||'')}
+
+/* ---------- Vue Grande Prêtresse ---------- */
+function covBar(adj){
+  return `<div class="covens">`+S.cov.map((c,i)=>{
+    const cur=S.curse&&S.curse.c===i;
+    const here=(S.ph==='q'&&S.ans[i]!=null);
+    return `<div class="cov${S.turn===i&&!S.fin&&S.ph!=='end'?' tour':''}">
+      <span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${c.s}</span>
+      ${cur?`<span class="tag">Maudit : ${esc(S.curse.m)}</span>`:''}${here?`<span class="tag ok">A répondu</span>`:''}
+      ${adj?`<span class="adj"><button data-act="adj" data-c="${i}" data-d="-1" aria-label="Retirer un point à ${esc(c.n)}">−</button><button data-act="adj" data-c="${i}" data-d="1" aria-label="Ajouter un point à ${esc(c.n)}">+</button></span>`:''}
+    </div>`}).join('')+`</div>`;
+}
+function head(c){const a=ARC[c.a];return `<div class="entete"><span class="eyebrow">${a.n} · ${esc(a.nom)} · ${esc(S.fin?'Rituel final':a.sub)}</span>${S.ph==='q'&&c.s!==0?`<span class="chrono" id="chrono"></span>`:''}</div>`}
+function optsHtml(c,rev){return c.t==='qcm'?`<div class="opts">`+c.o.map((o,i)=>`<div class="opt${rev&&i===c.r?' bonne':''}"><b>${L[i]}</b><span>${esc(o)}</span></div>`).join('')+`</div>`:''}
+
+function render(){
+  clearInterval(timer);let h='';
+  if(S.ph==='setup'){
+    h=`<div class="col"><span class="eyebrow">Soirée du 30 · un jeu en trois covens</span><h1>Le Sabbat des Arcanes</h1>
+      <p class="sub">Formez trois covens, donnez-leur un nom et un emblème. Chaque coven tire une carte à son tour, tout le monde répond.</p></div>
+      <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}"></div>`).join('')+`</div>
+            <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
+      <div class="sub" id="phones"></div>
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button></div>`;
+  }else if(S.ph==='deck'){
+    h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
+      <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
+      ${showQR?'<div class="sub" id="phones"></div>':''}<div class="barre"><span class="row"><button class="btn ghost small" data-act="skip">Passer le tour</button><button class="btn ghost small" data-act="qr">QR code</button></span><button class="btn ghost small" data-act="final">Lancer le rituel final</button></div>`;
+  }else if(S.ph==='flip'){
+    const a=ARC[card().a];
+    h=covBar(false)+`<div class="autel"><div class="flip"><div class="in"><div class="f dos"></div><div class="f face">${cardSvg(card().a)}</div></div></div>
+      <p class="sub">${esc(a.sub)}</p><button class="btn" data-act="open">Découvrir l'épreuve</button></div>`;
+  }else if(S.ph==='q'){
+    const c=card();
+    h=covBar(false)+`<div class="epreuve">${head(c)}<p class="question">${esc(c.q)}</p>${optsHtml(c,false)}
+      <p class="sub">${S.fin?'Chaque coven joue sa mise.':c.p===2?'Question corsée : 2 points.':'1 point.'}</p></div>
+      <div class="barre"><span class="sub">Réponse sur le téléphone du coven, ou à voix haute.</span><button class="btn" data-act="reveal">Révéler</button></div>`;
+  }else if(S.ph==='rev'){
+    const c=card();
+    h=covBar(false)+`<div class="epreuve">${head(c)}<p class="question">${esc(c.q)}</p>${optsHtml(c,true)}
+      <div class="rep"><strong>${esc(answerText(c))}</strong>${c.x?`<span class="sub">${esc(c.x)}</span>`:''}</div>
+      <span class="eyebrow">Qui a juste ? Touchez pour corriger</span>
+      <div class="juges">`+S.cov.map((v,i)=>{const a=S.ans[i];const at=a==null?'':c.t==='qcm'?(L[a]||''):a;
+        return `<button class="juge${S.ok[i]?' ok':''}" data-act="ok" data-c="${i}" aria-pressed="${S.ok[i]}"><span>${EMB[v.e]} ${esc(v.n)}</span><small>${S.ok[i]?'Juste':'Faux'}${at!==''?' · « '+esc(at)+' »':''}${S.fin?' · mise '+S.bets[i]:''}</small></button>`}).join('')+`</div></div>
+      <div class="barre"><span></span><button class="btn" data-act="valid">Valider les points</button></div>`;
+  }else if(S.ph==='defi'){
+    const c=card();const sort=c.t==='sort';
+    h=covBar(!sort)+`<div class="epreuve">${head(c)}<p class="question">${esc(c.q)}</p>
+      ${c.x?`<p class="sub">${esc(c.x)}</p>`:''}
+      ${sort?`<span class="eyebrow">Quel coven est maudit ?</span><div class="juges">`+S.cov.map((v,i)=>i===S.turn?'':`<button class="juge${S.curse&&S.curse.c===i?' ok':''}" data-act="curse" data-c="${i}"><span>${EMB[v.e]} ${esc(v.n)}</span></button>`).join('')+`</div>`:''}
+      ${c.rt?(S.shown?`<div class="rep"><strong style="font-size:22px">${esc(c.rt)}</strong></div>`:`<div class="row"><button class="btn ghost small" data-act="show">Afficher les réponses</button></div>`):''}
+      ${c.s?`<div class="row"><button class="btn ghost small" data-act="chrono">Lancer le chrono</button><span class="chrono" id="chrono"></span></div>`:''}</div>
+      <div class="barre"><span class="sub">${sort?'':'Ajustez les scores avec + et −.'}</span><button class="btn" data-act="next">Carte suivante</button></div>`;
+  }else if(S.ph==='bets'){
+    h=covBar(false)+`<div class="epreuve"><span class="eyebrow">Rituel final</span><h2>Thème : Harry Potter</h2>
+      <p class="sub">Chaque coven annonce sa mise. Juste, il la gagne. Faux, il la perd.</p>
+      <div class="juges">`+S.cov.map((v,i)=>`<div class="juge"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="row"><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="-1" aria-label="Baisser la mise">−</button><b class="chrono" style="color:var(--laiton)">${S.bets[i]}</b><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="1" aria-label="Monter la mise">+</button></span></div>`).join('')+`</div></div>
+      <div class="barre"><button class="btn ghost small" data-act="back">Retour au jeu</button><button class="btn" data-act="finq">Poser la question</button></div>`;
+  }else if(S.ph==='end'){
+    const r=S.cov.map((c,i)=>({...c,i})).sort((a,b)=>b.s-a.s);
+    h=`<div class="col"><span class="eyebrow">Couronnement</span><h1>${EMB[r[0].e]} ${esc(r[0].n)}</h1><p class="sub">Coven suprême de la nuit.</p></div>
+      <div>`+r.map(c=>`<div class="rang"><span>${EMB[c.e]} ${esc(c.n)}</span><b>${c.s} pts</b></div>`).join('')+`</div>
+      <div class="row"><button class="btn ghost" data-act="reset">Nouvelle partie</button></div>`;
+  }
+  app.innerHTML=h;
+  if(S.ph==='q'&&card().s!==0)tick();
+  if(document.getElementById('phones'))phones();
+  lsSet('sabbat',JSON.stringify(S));push();
+}
+function tick(){
+  const el=document.getElementById('chrono');if(!el)return;
+  const f=()=>{const r=Math.max(0,Math.ceil((S.tEnd-Date.now())/1000));el.textContent=r+' s';if(!r)clearInterval(timer)};
+  f();timer=setInterval(f,250);
+}
+function phones(){
+  const el=document.getElementById('phones');if(!el)return;
+  if(!db){el.textContent='Mode animatrice seule : les covens répondent à voix haute ou sur papier.';return}
+  const url=location.origin+location.pathname+'?p='+code;
+  const n=[0,1,2].filter(c=>PL&&PL[c]&&PL[c].on).length;
+  let qr='';try{const q=qrcode(0,'M');q.addData(url);q.make();qr=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){}
+  el.innerHTML=`<span class="qr">${qr}</span><span>Un téléphone par coven : scannez pour rejoindre.<br>${n} coven${n>1?'s':''} connecté${n>1?'s':''} sur 3.<br><small>${esc(url)}</small></span>`;
+}
+function clearAnswers(){if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({qid:null,a:null,pk:null}).catch(()=>{})})}
+function draw(s){if(S.drawn[s])return;S.drawn[s]=1;S.cur=s;S.n++;S.ph='flip';render()}
+function nextTurn(){S.turn=(S.turn+1)%3;S.cur=null;S.shown=false;S.ph=S.drawn.every(Boolean)?'bets':'deck';if(S.ph==='bets')S.fin=true}
+function openQ(){S.qid++;S.ans={};S.ok=[false,false,false];S.ph='q';const c=card();S.tEnd=Date.now()+1000*(c.s||(c.t==='libre'?40:30))}
+
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  if(!isHost)return playerClick(b);
+  const act=b.dataset.act,c=Number(b.dataset.c),d=Number(b.dataset.d);
+  const names=()=>S.cov.forEach((v,i)=>{const el=document.getElementById('cn'+i);if(el&&el.value.trim())v.n=el.value.trim()});
+  if(act==='emb'){names();S.cov[c].e=(S.cov[c].e+1)%EMB.length}
+  else if(act==='start'){names();S.ph='deck';clearAnswers()}
+  else if(act==='qr')showQR=!showQR;
+  else if(act==='draw')return draw(Number(b.dataset.s));
+  else if(act==='skip')S.turn=(S.turn+1)%3;
+  else if(act==='adj')S.cov[c].s+=d;
+  else if(act==='open'){const k=card();if(k.t==='defi'||k.t==='sort'){S.ph='defi';S.shown=false}else openQ()}
+  else if(act==='reveal'){const k=card();S.cov.forEach((_,i)=>S.ok[i]=judge(k,S.ans[i]));S.ph='rev'}
+  else if(act==='ok')S.ok[c]=!S.ok[c];
+  else if(act==='valid'){
+    if(S.fin){S.cov.forEach((v,i)=>v.s+=S.ok[i]?S.bets[i]:-S.bets[i]);S.ph='end'}
+    else{const k=card();S.cov.forEach((v,i)=>{if(S.ok[i])v.s+=k.p+(i===S.turn?1:0)});S.curse=null;nextTurn()}
+  }
+  else if(act==='curse')S.curse={c,m:card().m};
+  else if(act==='show')S.shown=true;
+  else if(act==='chrono'){S.tEnd=Date.now()+1000*card().s;render();return tick()}
+  else if(act==='next')nextTurn();
+  else if(act==='final'){S.fin=true;S.ph='bets';S.bets=S.cov.map(v=>Math.max(1,Math.min(3,v.s)))}
+  else if(act==='back'){S.fin=false;S.ph='deck'}
+  else if(act==='bet'){const max=Math.max(2,S.cov[c].s);S.bets[c]=Math.max(0,Math.min(max,S.bets[c]+d))}
+  else if(act==='finq')openQ();
+  else if(act==='reset'){S=fresh();clearAnswers()}
+  render();
+});
+
+/* ---------- Diffusion vers les téléphones (Firebase) ---------- */
+function push(){
+  if(!db||!isHost)return;
+  const pub={ph:S.ph,turn:S.turn,n:S.n,qid:S.qid,fin:!!S.fin,cov:S.cov.map(c=>({n:c.n,e:c.e,s:c.s})),drawn:S.drawn.join('')};
+  if(['q','rev','defi','flip'].includes(S.ph)){const c=card();pub.a=c.a;
+    if(S.ph!=='flip'){pub.t=c.t;pub.q=c.q;if(c.o)pub.o=c.o}
+    if(S.ph==='rev'){pub.r=answerText(c);pub.ok=S.ok.map(Boolean)}}
+  db.ref(base+'/g').set(pub).catch(()=>{});
+}
+function hostPlayers(){
+  let ch=false;
+  for(let cv=0;cv<3;cv++){
+    const pr=PL&&PL[cv];if(!pr)continue;
+    if(S.ph==='deck'&&pr.pk&&pr.pk.n===S.n&&cv===S.turn&&Number.isInteger(pr.pk.s)&&S.drawn[pr.pk.s]===0)return draw(pr.pk.s);
+    if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,60);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
+  }
+  if(ch)render();else phones();
+}
+
+/* ---------- Vue coven (téléphone) ---------- */
+let P={cv:null,sent:-1,sig:''};
+function game(){return pubG}
+function renderPlayer(force){
+  const g=game();
+  const sig=JSON.stringify([g,P.cv,P.sent]);if(!force&&sig===P.sig)return;P.sig=sig;
+  let h='';
+  if(!db)h=`<div class="col"><h1>Le Sabbat des Arcanes</h1><p class="sub">Ce téléphone ne peut pas rejoindre la partie. Suivez le jeu sur l'écran et répondez à voix haute.</p></div>`;
+  else if(!g)h=`<div class="col"><h1>Le Sabbat des Arcanes</h1><p class="sub">En attente de la Grande Prêtresse…</p></div>`;
+  else if(P.cv==null||!g.cov[P.cv])h=`<div class="col"><span class="eyebrow">Bienvenue</span><h2>Quel est votre coven ?</h2>`+g.cov.map((c,i)=>`<button class="btn ghost" data-act="join" data-c="${i}">${EMB[c.e]} ${esc(c.n)}</button>`).join('')+`</div>`;
+  else{
+    const me=g.cov[P.cv];
+    h=`<div class="covens">`+g.cov.map((c,i)=>`<div class="cov${i===P.cv?' tour':''}"><span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${Number(c.s)||0}</span>${i===P.cv?'<span class="tag ok">Vous</span>':''}</div>`).join('')+`</div>`;
+    const a=ARC[g.a];const eb=a?`<span class="eyebrow">${a.n} · ${esc(a.nom)}</span>`:'';
+    if(g.ph==='setup')h+=`<p class="sub">La partie va commencer.</p>`;
+    else if(g.ph==='deck'){
+      if(g.turn===P.cv)h+=`<h2>À vous de tirer</h2><div class="deck">`+String(g.drawn).split('').map((d,i)=>d==='1'?`<div class="dos vide"></div>`:`<button class="dos" data-act="pick" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>`;
+      else h+=`<p class="sub">${esc(g.cov[g.turn]?g.cov[g.turn].n:'')} tire une carte.</p>`;
+    }
+    else if(g.ph==='flip')h+=`${eb}<p class="sub">La carte se retourne…</p>`;
+    else if(g.ph==='q'){
+      h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p>`;
+      if(P.sent===g.qid)h+=`<p class="sub">Réponse scellée. Regardez l'écran.</p>`;
+      else if(g.t==='qcm')h+=`<div class="opts">`+(g.o||[]).map((o,i)=>`<button class="opt" data-act="ans" data-v="${i}"><b>${L[i]}</b><span>${esc(o)}</span></button>`).join('')+`</div>`;
+      else h+=`<input type="text" id="pa" maxlength="60" autocomplete="off" placeholder="Votre réponse"><button class="btn" data-act="send">Sceller la réponse</button>`;
+      h+=`</div>`;
+    }
+    else if(g.ph==='rev')h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p><div class="rep"><strong>${esc(g.r)}</strong><span class="sub">${g.ok&&g.ok[P.cv]?'Votre coven a juste.':'Pas cette fois.'}</span></div></div>`;
+    else if(g.ph==='defi')h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p><p class="sub">Tout se passe dans la pièce.</p></div>`;
+    else if(g.ph==='bets')h+=`<h2>Rituel final</h2><p class="sub">Annoncez votre mise à la Grande Prêtresse. Vous avez ${Number(me.s)||0} points.</p>`;
+    else if(g.ph==='end')h+=`<h2>Le sabbat est clos</h2><p class="sub">Le couronnement est à l'écran.</p>`;
+  }
+  app.innerHTML=h;
+}
+function playerClick(b){
+  const act=b.dataset.act,g=game();if(!db)return;
+  const me=()=>db.ref(base+'/p/'+P.cv);
+  if(act==='join'){P.cv=Number(b.dataset.c);lsSet('sabbat-cv-'+code,String(P.cv));me().update({on:true}).catch(()=>{})}
+  else if(act==='pick'&&g)me().update({pk:{n:g.n,s:Number(b.dataset.s)}}).catch(()=>{});
+  else if(act==='ans'&&g){P.sent=g.qid;me().update({qid:g.qid,a:Number(b.dataset.v)}).catch(()=>{})}
+  else if(act==='send'&&g){const v=(document.getElementById('pa')||{}).value||'';if(!v.trim())return;P.sent=g.qid;me().update({qid:g.qid,a:v.trim().slice(0,60)}).catch(()=>{})}
+  renderPlayer(true);
+}
+
+/* ---------- Démarrage ---------- */
+function boot(){
+  const pc=new URLSearchParams(location.search).get('p');
+  isHost=!pc;
+  if(isHost){code=lsGet('sabbat-code');if(!code){const A='ABCDEFGHJKLMNPQRSTUVWXYZ';code=Array.from({length:4},()=>A[Math.floor(Math.random()*A.length)]).join('');lsSet('sabbat-code',code)}}
+  else code=pc.toUpperCase().replace(/[^A-Z]/g,'').slice(0,8);
+  try{if(FIREBASE_CONFIG&&window.firebase){firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();base='rooms/'+code}}catch(e){db=null}
+  if(isHost){
+    try{const sv=JSON.parse(lsGet('sabbat'));if(sv&&sv.order&&sv.order.length===CARDS.length&&sv.cov)S=sv}catch(e){}
+    if(!S)S=fresh();
+    render();
+    if(db)db.ref(base+'/p').on('value',sn=>{PL=sn.val()||{};hostPlayers()},()=>{});
+  }else{
+    const cv=lsGet('sabbat-cv-'+code);if(cv!=null&&cv!=='')P.cv=Number(cv);
+    renderPlayer(true);
+    if(db){db.ref(base+'/g').on('value',sn=>{pubG=sn.val();renderPlayer(false)},()=>{});if(P.cv!=null)db.ref(base+'/p/'+P.cv).update({on:true}).catch(()=>{})}
+  }
+}
+boot();
+</script>
+</body></html>
