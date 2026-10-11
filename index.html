@@ -24,6 +24,8 @@ body{margin:0}
 #phones{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .qr{display:block;width:150px;background:#fff;padding:6px;border-radius:4px}
 .qr svg{display:block;width:100%;height:auto}
+.meca{color:var(--laiton);font-size:clamp(26px,5.5vw,38px);text-align:center}
+.meca-tag{font:400 clamp(18px,3.8vw,25px)/1 var(--titre);color:#1b1408;background:var(--laiton);padding:7px 13px;border-radius:3px;letter-spacing:.03em}
 .tag-ok{color:var(--sauge);font-weight:700;font-size:13px;white-space:nowrap}
 .btn.sel{border-color:var(--laiton);box-shadow:0 0 0 1px var(--laiton) inset}
 body{background:var(--nuit);color:var(--os);font:400 17px/1.45 var(--corps);
@@ -276,7 +278,7 @@ function covBar(adj){
       ${adj?`<span class="adj"><button data-act="adj" data-c="${i}" data-d="-1" aria-label="Retirer un point à ${esc(c.n)}">−</button><button data-act="adj" data-c="${i}" data-d="1" aria-label="Ajouter un point à ${esc(c.n)}">+</button></span>`:''}
     </div>`}).join('')+`</div>`;
 }
-function head(c){const a=ARC[c.a];return `<div class="entete"><span class="eyebrow">${a.n} · ${esc(a.nom)} · ${esc(S.fin?'Rituel final':a.sub)}</span>${S.ph==='q'&&c.s!==0?`<span class="chrono" id="chrono"></span>`:''}</div>`}
+function head(c){const a=ARC[c.a];return `<div class="entete"><span class="row"><span class="meca-tag">${esc(S.fin?'Rituel final':a.sub)}</span><span class="eyebrow">${a.n} · ${esc(a.nom)}</span></span>${S.ph==='q'&&c.s!==0?`<span class="chrono" id="chrono"></span>`:''}</div>`}
 function optsHtml(c,rev){return c.t==='qcm'?`<div class="opts">`+c.o.map((o,i)=>`<div class="opt${rev&&i===c.r?' bonne':''}"><b>${L[i]}</b><span>${esc(o)}</span></div>`).join('')+`</div>`:''}
 
 function render(){
@@ -287,7 +289,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 3</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 4</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -295,7 +297,7 @@ function render(){
   }else if(S.ph==='flip'){
     const a=ARC[card().a];
     h=covBar(false)+`<div class="autel"><div class="flip"><div class="in"><div class="f dos"></div><div class="f face">${cardSvg(card().a)}</div></div></div>
-      <p class="sub">${esc(a.sub)}</p><button class="btn" data-act="open">Découvrir l'épreuve</button></div>`;
+      <h2 class="meca">${esc(a.sub)}</h2><button class="btn" data-act="open">Découvrir l'épreuve</button></div>`;
   }else if(S.ph==='q'){
     const c=card();
     h=covBar(false)+`<div class="epreuve">${head(c)}<p class="question">${esc(c.q)}</p>${optsHtml(c,false)}
@@ -422,13 +424,13 @@ function renderPlayer(force){
   else{
     const me=g.cov[P.cv];
     h=`<div class="covens">`+g.cov.map((c,i)=>`<div class="cov${i===P.cv?' tour':''}"><span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${Number(c.s)||0}</span>${i===P.cv?'<span class="tag ok">Vous</span>':''}</div>`).join('')+`</div>`;
-    const a=ARC[g.a];const eb=a?`<span class="eyebrow">${a.n} · ${esc(a.nom)}</span>`:'';
+    const a=ARC[g.a];const eb=a?`<span class="row"><span class="meca-tag">${esc(g.fin?'Rituel final':a.sub)}</span><span class="eyebrow">${a.n} · ${esc(a.nom)}</span></span>`:'';
     if(g.ph==='setup')h+=`<p class="sub">Coven prêt. La Grande Prêtresse va lancer la partie.</p><div class="row"><button class="btn ghost small" data-act="edit">Modifier</button></div>`;
     else if(g.ph==='deck'){
       if(g.turn===P.cv)h+=`<h2>À vous de tirer</h2><div class="deck">`+String(g.drawn).split('').map((d,i)=>d==='1'?`<div class="dos vide"></div>`:`<button class="dos" data-act="pick" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>`;
       else h+=`<p class="sub">${esc(g.cov[g.turn]?g.cov[g.turn].n:'')} tire une carte.</p>`;
     }
-    else if(g.ph==='flip')h+=`${eb}<p class="sub">La carte se retourne…</p>`;
+    else if(g.ph==='flip')h+=a?`<div class="autel"><div class="flip"><div class="in"><div class="f dos"></div><div class="f face">${cardSvg(g.a)}</div></div></div><h2 class="meca">${esc(a.sub)}</h2></div>`:'';
     else if(g.ph==='q'){
       h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p>`;
       if(P.sent===g.qid)h+=`<p class="sub">Réponse scellée. Regardez l'écran.</p>`;
