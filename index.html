@@ -249,7 +249,7 @@ const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const L='ABCD';
-let db=null,base='',code='',isHost=true,S=null,timer=null,PL={},pubG=null,showQR=false;
+let db=null,base='',code='',isHost=true,S=null,timer=null,PL={},pubG=null,showQR=false,askReset=false;
 
 function fresh(){
   const order=CARDS.map((_,i)=>i);
@@ -287,11 +287,11 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 3</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
-      ${showQR?'<div class="sub" id="phones"></div>':''}<div class="barre"><span class="row"><button class="btn ghost small" data-act="skip">Passer le tour</button><button class="btn ghost small" data-act="qr">QR code</button></span><button class="btn ghost small" data-act="final">Lancer le rituel final</button></div>`;
+      ${showQR?'<div class="sub" id="phones"></div>':''}<div class="barre"><span class="row"><button class="btn ghost small" data-act="skip">Passer le tour</button><button class="btn ghost small" data-act="qr">QR code</button><button class="btn ghost small" data-act="reset2">${askReset?"Confirmer : tout effacer ?":"Nouvelle partie"}</button></span><button class="btn ghost small" data-act="final">Lancer le rituel final</button></div>`;
   }else if(S.ph==='flip'){
     const a=ARC[card().a];
     h=covBar(false)+`<div class="autel"><div class="flip"><div class="in"><div class="f dos"></div><div class="f face">${cardSvg(card().a)}</div></div></div>
@@ -377,7 +377,7 @@ app.addEventListener('click',e=>{
   else if(act==='back'){S.fin=false;S.ph='deck'}
   else if(act==='bet'){const max=Math.max(2,S.cov[c].s);S.bets[c]=Math.max(0,Math.min(max,S.bets[c]+d))}
   else if(act==='finq')openQ();
-  else if(act==='reset'){S=fresh();clearAnswers()}
+  else if(act==='reset'||act==='reset2'){if(act==='reset2'&&!askReset){askReset=true}else{const old=S.cov;S=fresh();S.cov.forEach((c,i)=>{c.n=old[i].n;c.e=old[i].e});askReset=false;clearAnswers()}}
   render();
 });
 
@@ -392,20 +392,19 @@ function push(){
   db.ref(base+'/g').set(pub).catch(()=>{});
 }
 function hostPlayers(){
-  if(S.ph==='setup'){
-    names();
-    for(let cv=0;cv<3;cv++){const pr=PL&&PL[cv];if(!pr||!pr.nm)continue;
-      S.cov[cv].n=String(pr.nm).slice(0,28);
-      if(Number.isInteger(pr.em)&&pr.em>=0&&pr.em<EMB.length)S.cov[cv].e=pr.em}
-    return render();
-  }
+  let nc=false;
+  if(S.ph==='setup')names();
+  for(let cv=0;cv<3;cv++){const pr=PL&&PL[cv];if(!pr||!pr.nm)continue;
+    const nm=String(pr.nm).slice(0,28),em=(Number.isInteger(pr.em)&&pr.em>=0&&pr.em<EMB.length)?pr.em:S.cov[cv].e;
+    if(S.cov[cv].n!==nm||S.cov[cv].e!==em){S.cov[cv].n=nm;S.cov[cv].e=em;nc=true}}
+  if(S.ph==='setup')return render();
   let ch=false;
   for(let cv=0;cv<3;cv++){
     const pr=PL&&PL[cv];if(!pr)continue;
     if(S.ph==='deck'&&pr.pk&&pr.pk.n===S.n&&cv===S.turn&&Number.isInteger(pr.pk.s)&&S.drawn[pr.pk.s]===0)return draw(pr.pk.s);
     if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,60);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
   }
-  if(ch)render();else phones();
+  if(ch||nc)render();else phones();
 }
 
 /* ---------- Vue coven (téléphone) ---------- */
