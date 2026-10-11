@@ -193,7 +193,7 @@ const CARDS=[
  {a:'pap',t:'qcm',p:1,q:"Quelle fête celtique est l'ancêtre d'Halloween ?",o:['Beltane','Samhain','Yule'],r:1,x:"Samhain marquait la fin des récoltes et l'entrée dans la saison sombre."},
  {a:'pap',t:'qcm',p:2,q:"Combien de cartes compte un jeu de tarot divinatoire complet ?",o:['22','56','78','108'],r:2,x:"22 arcanes majeurs et 56 arcanes mineurs."},
  {a:'pap',t:'libre',p:1,q:"Comment appelle-t-on l'étoile à cinq branches utilisée comme symbole de protection ?",r:['pentagramme','pentacle'],rt:'Le pentagramme',x:"Inscrit dans un cercle, on parle de pentacle."},
- {a:'pap',t:'libre',p:1,q:"Quelle plante, dont la racine évoque une silhouette humaine, était réputée crier quand on l'arrache ?",r:['mandragore'],rt:'La mandragore',x:""},
+ {a:'pap',t:'qcm',p:1,q:"Que signifie le titre du Malleus Maleficarum, célèbre manuel de chasse aux sorcières du XVe siècle ?",o:['Le Miroir des maléfices','Le Marteau des sorcières','Le Livre des malédictions'],r:1,x:"Publié vers 1486, il a été réimprimé pendant deux siècles."},
  {a:'pap',t:'qcm',p:1,q:"Dans la wicca, comment s'appelle le recueil où l'on consigne sorts et rituels ?",o:['Le Livre des Ombres','Le Nécronomicon','Le Codex Gigas'],r:0,x:"Le Nécronomicon est une invention de Lovecraft."},
  {a:'pap',t:'libre',p:2,q:"Quel écrivain public parisien du XIVe siècle passe pour avoir découvert la pierre philosophale ?",r:['flamel'],rt:'Nicolas Flamel',x:"Sa réputation d'alchimiste est née bien après sa mort."},
 
@@ -204,15 +204,15 @@ const CARDS=[
  {a:'lun',t:'libre',p:1,q:"Quelle forêt bretonne est associée à Merlin et à la fée Viviane ?",r:['broceliande'],rt:'Brocéliande',x:""},
  {a:'lun',t:'qcm',p:1,q:"Dans La Belle au bois dormant, sur quoi la princesse se pique-t-elle le doigt ?",o:['Une épine de rose','Un fuseau','Une aiguille à broder'],r:1,x:"Le fuseau d'un rouet."},
 
- {a:'eto',t:'libre',p:1,q:"Comment s'appelle le chat de Sabrina ?",r:['salem'],rt:'Salem',x:""},
+ {a:'eto',t:'libre',p:1,q:"Arcane : comment s'appelait Jinx quand elle était enfant ?",r:['powder'],rt:'Powder',x:"C'est Silco qui l'élève sous le nom de Jinx."},
  {a:'eto',t:'qcm',p:1,q:"Dans Kiki la petite sorcière, quel animal l'accompagne ?",o:['Un hibou','Un chat noir','Un crapaud'],r:1,x:"Il s'appelle Jiji."},
  {a:'eto',t:'libre',p:1,q:"Dans Le Seigneur des Anneaux, combien d'anneaux ont été donnés aux Hommes ?",r:['neuf','9'],rt:'Neuf',x:"Trois pour les Elfes, sept pour les Nains, neuf pour les Hommes."},
- {a:'eto',t:'qcm',p:2,q:"Harry Potter : de quel bois est faite la baguette de Harry ?",o:['Houx','If','Sureau','Chêne'],r:0,x:"Houx et plume de phénix. L'if, c'est celle de Voldemort."},
- {a:'eto',t:'qcm',p:2,q:"Harry Potter : combien d'escaliers compte Poudlard ?",o:['42','97','142','394'],r:2,x:"142, d'après le premier tome."},
+ {a:'pap',t:'qcm',p:2,q:"Dans Sorcières, Mona Chollet consacre un chapitre à chacune de ces figures de femmes, sauf une. Laquelle ?",o:['La femme indépendante','La femme sans enfant','La femme âgée','La femme artiste'],r:3,x:"Les trois autres sont, selon elle, les héritières des cibles des chasses aux sorcières."},
+ {a:'eto',t:'libre',p:1,q:"Le Seigneur des Anneaux : comment s'appelle le plus ancien des Ents, celui qui porte Merry et Pippin ?",r:['sylvebarbe','barbebois','treebeard','fangorn'],rt:'Sylvebarbe',x:"Barbebois dans la nouvelle traduction, Treebeard en VO."},
  {a:'eto',t:'qcm',p:1,q:"Charmed : quel est le premier pouvoir de Piper ?",o:['Figer le temps','La télékinésie','Les prémonitions'],r:0,x:"La télékinésie pour Prue, les prémonitions pour Phoebe."},
  {a:'eto',t:'libre',p:1,q:"The Witcher : comment s'appelle la jument de Geralt ?",r:['ablette','roach'],rt:'Ablette (Roach en VO)',x:""},
  {a:'eto',t:'qcm',p:1,q:"Dans quelle ville Buffy chasse-t-elle les vampires ?",o:['Mystic Falls','Sunnydale','Riverdale'],r:1,x:""},
- {a:'eto',t:'qcm',p:1,q:"Ma sorcière bien-aimée : que remue Samantha pour jeter un sort ?",o:['Les oreilles','Le nez','Les doigts'],r:1,x:""},
+ {a:'eto',t:'qcm',p:2,q:"Hérédité : quel démon la secte cherche-t-elle à invoquer ?",o:['Pazuzu','Paimon','Belzébuth'],r:1,x:"Pazuzu, c'est celui de L'Exorciste."},
  {a:'eto',t:'qcm',p:1,q:"Fourth Wing : quelle créature chevauchent les cavaliers de Basgiath ?",o:['Des griffons','Des dragons','Des phénix'],r:1,x:""},
  {a:'eto',t:'libre',p:2,q:"Un palais d'épines et de roses : de quelle cour Rhysand est-il le Grand Seigneur ?",r:['nuit','night'],rt:'La Cour de la Nuit',x:""},
  {a:'eto',t:'libre',p:2,q:"Le Château ambulant : comment s'appelle le démon du feu ?",r:['calcifer'],rt:'Calcifer',x:""},
@@ -240,7 +240,7 @@ const CARDS=[
  {a:'rou',t:'defi',s:0,q:"La Roue vous sourit : 3 points tombent du ciel pour le coven qui a tiré.",x:"La Grande Prêtresse ajuste les scores."},
  {a:'rou',t:'defi',s:0,q:"La Roue s'emballe : le coven qui a tiré échange son score avec le dernier. S'il est déjà dernier, il gagne 2 points.",x:"La Grande Prêtresse ajuste les scores."}
 ];
-const FINAL={a:'rou',t:'libre',p:0,q:"Harry Potter : citez les sept Horcruxes.",r:['nagini'],rt:"Le journal, la bague, le médaillon, la coupe, le diadème, Nagini et Harry",x:"Il faut les sept pour gagner sa mise."};
+const FINAL={a:'rou',t:'libre',p:0,q:"Hors des huit arcanes du jeu de ce soir, citez six autres arcanes majeurs du tarot. Réponse sur papier.",r:['imperatrice'],rt:"L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, La Maison Dieu, Le Soleil, Le Monde",x:"Il en faut six sur ces quatorze pour gagner sa mise."};
 const EMB=['☾','✶','♄','☿','♆','♃'];
 const PLAYLIST=["Harry Potter, Hedwig's Theme","Charmed, générique (How Soon Is Now?)","Le Château ambulant, Merry-Go-Round of Life","Buffy contre les vampires, générique","The Witcher, Toss a Coin to Your Witcher","Le Seigneur des Anneaux, Concerning Hobbits"];
 
@@ -289,7 +289,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 4</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 7</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -320,7 +320,7 @@ function render(){
       ${c.s?`<div class="row"><button class="btn ghost small" data-act="chrono">Lancer le chrono</button><span class="chrono" id="chrono"></span></div>`:''}</div>
       <div class="barre"><span class="sub">${sort?'':'Ajustez les scores avec + et −.'}</span><button class="btn" data-act="next">Carte suivante</button></div>`;
   }else if(S.ph==='bets'){
-    h=covBar(false)+`<div class="epreuve"><span class="eyebrow">Rituel final</span><h2>Thème : Harry Potter</h2>
+    h=covBar(false)+`<div class="epreuve"><span class="eyebrow">Rituel final</span><h2>Thème : le tarot</h2>
       <p class="sub">Chaque coven annonce sa mise. Juste, il la gagne. Faux, il la perd.</p>
       <div class="juges">`+S.cov.map((v,i)=>`<div class="juge"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="row"><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="-1" aria-label="Baisser la mise">−</button><b class="chrono" style="color:var(--laiton)">${S.bets[i]}</b><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="1" aria-label="Monter la mise">+</button></span></div>`).join('')+`</div></div>
       <div class="barre"><button class="btn ghost small" data-act="back">Retour au jeu</button><button class="btn" data-act="finq">Poser la question</button></div>`;
