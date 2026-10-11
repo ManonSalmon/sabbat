@@ -46,6 +46,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--laiton);outline
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .col{display:flex;flex-direction:column;gap:12px}
 .panel{background:var(--voile);border:1px solid var(--trait);padding:16px;border-radius:4px}
+textarea{font:inherit;color:var(--os);background:var(--nuit);border:1px solid var(--trait);border-radius:3px;padding:11px 12px;width:100%;box-sizing:border-box;resize:vertical}
 input[type=text]{font:inherit;color:var(--os);background:var(--nuit);border:1px solid var(--trait);border-radius:3px;padding:11px 12px;min-width:0;width:100%}
 
 /* covens */
@@ -230,7 +231,7 @@ const CARDS=[
 
  {a:'mat',t:'defi',s:60,q:"Sur papier : le coven qui a tiré choisit une créature fantastique et la dessine en 60 secondes.",x:"Si un autre coven la reconnaît : 2 points pour les dessinateurs, 1 point pour ceux qui ont trouvé."},
  {a:'mat',t:'defi',s:60,q:"Le coven qui a tiré choisit un conte et le mime. Pas un mot, pas un bruit.",x:"Si un autre coven trouve : 2 points pour les mimes, 1 point pour ceux qui ont trouvé."},
- {a:'mat',t:'defi',s:60,q:"Incantation : le coven qui a tiré a 60 secondes pour écrire une formule magique en rimes contre un tracas du quotidien, puis la déclame.",x:"Chaque autre coven accorde 1 point s'il est envoûté. 2 points maximum."},
+ {a:'mat',t:'defi',s:60,q:"Incantation : chaque coven a 60 secondes pour écrire une formule magique en rimes contre un tracas du quotidien, puis la déclame.",x:"Tous les covens jouent. La Grande Prêtresse tranche et attribue les points."},
 
  {a:'dia',t:'sort',q:"Le coven qui a tiré maudit un rival : à la prochaine question, il n'aura que 10 secondes pour répondre.",m:"10 secondes"},
  {a:'dia',t:'sort',q:"Le coven qui a tiré maudit un rival : à la prochaine question, une erreur lui coûtera 1 point.",m:"l'erreur coûte 1 point"},
@@ -240,7 +241,7 @@ const CARDS=[
  {a:'rou',t:'defi',s:0,q:"La Roue vous sourit : 3 points tombent du ciel pour le coven qui a tiré.",x:"La Grande Prêtresse ajuste les scores."},
  {a:'rou',t:'defi',s:0,q:"La Roue s'emballe : le coven qui a tiré échange son score avec le dernier. S'il est déjà dernier, il gagne 2 points.",x:"La Grande Prêtresse ajuste les scores."}
 ];
-const FINAL={a:'rou',t:'libre',p:0,q:"Hors des huit arcanes du jeu de ce soir, citez six autres arcanes majeurs du tarot. Réponse sur papier.",r:['imperatrice'],rt:"L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, La Maison Dieu, Le Soleil, Le Monde",x:"Il en faut six sur ces quatorze pour gagner sa mise."};
+const FINAL={a:'rou',t:'libre',p:0,q:"Hors des huit arcanes du jeu de ce soir, citez six autres arcanes majeurs du tarot.",r:[],rt:"L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, La Maison Dieu, Le Soleil, Le Monde",x:"Il en faut six sur ces quatorze pour gagner sa mise."};
 const EMB=['☾','✶','♄','☿','♆','♃'];
 const PLAYLIST=["Harry Potter, Hedwig's Theme","Charmed, générique (How Soon Is Now?)","Le Château ambulant, Merry-Go-Round of Life","Buffy contre les vampires, générique","The Witcher, Toss a Coin to Your Witcher","Le Seigneur des Anneaux, Concerning Hobbits"];
 
@@ -289,7 +290,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 7</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 8</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -404,7 +405,7 @@ function hostPlayers(){
   for(let cv=0;cv<3;cv++){
     const pr=PL&&PL[cv];if(!pr)continue;
     if(S.ph==='deck'&&pr.pk&&pr.pk.n===S.n&&cv===S.turn&&Number.isInteger(pr.pk.s)&&S.drawn[pr.pk.s]===0)return draw(pr.pk.s);
-    if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,60);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
+    if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,240);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
   }
   if(ch||nc)render();else phones();
 }
@@ -435,7 +436,7 @@ function renderPlayer(force){
       h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p>`;
       if(P.sent===g.qid)h+=`<p class="sub">Réponse scellée. Regardez l'écran.</p>`;
       else if(g.t==='qcm')h+=`<div class="opts">`+(g.o||[]).map((o,i)=>`<button class="opt" data-act="ans" data-v="${i}"><b>${L[i]}</b><span>${esc(o)}</span></button>`).join('')+`</div>`;
-      else h+=`<input type="text" id="pa" maxlength="60" autocomplete="off" placeholder="Votre réponse"><button class="btn" data-act="send">Sceller la réponse</button>`;
+      else h+=`${g.fin?`<textarea id="pa" maxlength="240" rows="5" placeholder="Vos six arcanes, séparés par des virgules"></textarea>`:`<input type="text" id="pa" maxlength="60" autocomplete="off" placeholder="Votre réponse">`}<button class="btn" data-act="send">Sceller la réponse</button>`;
       h+=`</div>`;
     }
     else if(g.ph==='rev')h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p><div class="rep"><strong>${esc(g.r)}</strong><span class="sub">${g.ok&&g.ok[P.cv]?'Votre coven a juste.':'Pas cette fois.'}</span></div></div>`;
@@ -455,7 +456,7 @@ function playerClick(b){
   else if(act==='leave'){P.cv=null;P.named=false;lsSet('sabbat-cv-'+code,'')}
   else if(act==='pick'&&g)me().update({pk:{n:g.n,s:Number(b.dataset.s)}}).catch(()=>{});
   else if(act==='ans'&&g){P.sent=g.qid;me().update({qid:g.qid,a:Number(b.dataset.v)}).catch(()=>{})}
-  else if(act==='send'&&g){const v=(document.getElementById('pa')||{}).value||'';if(!v.trim())return;P.sent=g.qid;me().update({qid:g.qid,a:v.trim().slice(0,60)}).catch(()=>{})}
+  else if(act==='send'&&g){const v=(document.getElementById('pa')||{}).value||'';if(!v.trim())return;P.sent=g.qid;me().update({qid:g.qid,a:v.trim().slice(0,240)}).catch(()=>{})}
   renderPlayer(true);
 }
 
