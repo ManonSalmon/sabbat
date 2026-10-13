@@ -22,8 +22,7 @@ html,body{min-height:100%}
 body{margin:0}
 [hidden]{display:none!important}
 #snd{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;font:700 13px var(--corps);color:var(--cendre);background:var(--voile);border:1px solid var(--trait);border-radius:20px;padding:8px 12px}
-#ytbox{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;width:200px;height:113px;border-radius:4px;overflow:hidden;border:1px solid var(--trait);opacity:.85}
-body.yt{padding-bottom:140px}
+#ytbox{position:fixed;left:0;bottom:0;z-index:-1;width:200px;height:113px;overflow:hidden;opacity:.01;pointer-events:none}
 #phones{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .qr{display:block;width:150px;background:#fff;padding:6px;border-radius:4px}
 .qr svg{display:block;width:100%;height:auto}
@@ -202,11 +201,11 @@ function startAmb(){const c=ac();if(!c||AU.amb)return;try{
   AU.timer=setTimeout(chime,3000);ambLevel()}catch(e){}}
 function stopAmb(){if(!AU.amb)return;try{AU.amb.g.gain.setTargetAtTime(0,AU.ctx.currentTime,.3)}catch(e){}AU.amb=null;clearTimeout(AU.timer);clearTimeout(AU.ctimer);clearInterval(AU.itv)}
 const YT_ID='3ecxZy8luDg',YT_VOL=35;
-window.onYouTubeIframeAPIReady=function(){if(!isHost)return;try{const d=document.createElement('div');d.id='ytbox';d.innerHTML='<div id="yt"></div>';document.body.appendChild(d);document.body.classList.add('yt');
+window.onYouTubeIframeAPIReady=function(){if(!isHost)return;try{const d=document.createElement('div');d.id='ytbox';d.innerHTML='<div id="yt"></div>';d.setAttribute('aria-hidden','true');document.body.appendChild(d);
   AU.yt=new YT.Player('yt',{width:200,height:113,videoId:YT_ID,playerVars:{controls:0,disablekb:1,modestbranding:1,playsinline:1,rel:0},
    events:{onReady:()=>{AU.ytOk=true;AU.ytFail=false;stopAmb();try{AU.yt.setVolume(YT_VOL)}catch(e){}if(AU.wantPlay)ambOn()},
      onStateChange:e=>{if(e.data===0){try{AU.yt.seekTo(0);AU.yt.playVideo()}catch(x){}}},
-     onError:()=>{AU.ytOk=false;AU.ytFail=true;const b=document.getElementById('ytbox');if(b)b.remove();document.body.classList.remove('yt');if(AU.wantPlay)startAmb()}}})}catch(e){AU.ytFail=true}};
+     onError:()=>{AU.ytOk=false;AU.ytFail=true;const b=document.getElementById('ytbox');if(b)b.remove();if(AU.wantPlay)startAmb()}}})}catch(e){AU.ytFail=true}};
 function ambOn(){AU.wantPlay=true;if(AU.ytOk){stopAmb();try{if(AU.yt.getPlayerState()!==1)AU.yt.playVideo()}catch(e){}ambLevel()}else if(AU.ytFail)startAmb()}
 setTimeout(()=>{if(!AU.ytOk){AU.ytFail=true;if(AU.wantPlay&&AU.on)startAmb()}},9000);
 function ambOff(){AU.wantPlay=false;if(AU.ytOk){try{AU.yt.pauseVideo()}catch(e){}}stopAmb()}
@@ -366,7 +365,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 15</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 16</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
