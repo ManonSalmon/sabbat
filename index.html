@@ -22,6 +22,8 @@ html,body{min-height:100%}
 body{margin:0}
 [hidden]{display:none!important}
 #snd{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;font:700 13px var(--corps);color:var(--cendre);background:var(--voile);border:1px solid var(--trait);border-radius:20px;padding:8px 12px}
+#ytbox{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;width:200px;height:113px;border-radius:4px;overflow:hidden;border:1px solid var(--trait);opacity:.85}
+body.yt{padding-bottom:140px}
 #phones{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .qr{display:block;width:150px;background:#fff;padding:6px;border-radius:4px}
 .qr svg{display:block;width:100%;height:auto}
@@ -136,6 +138,7 @@ ol,ul{margin:8px 0 0;padding-left:22px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://www.youtube.com/iframe_api" async></script>
 <script>
 /* Configuration Firebase : coller ici le bloc fourni par la console Firebase (null = jeu sans téléphones) */
 const FIREBASE_CONFIG={
@@ -198,8 +201,16 @@ function startAmb(){const c=ac();if(!c||AU.amb)return;try{
   const chime=()=>{if(!AU.amb)return;const t=c.currentTime+.05;tone(N[Math.floor(Math.random()*N.length)],t,2.5,{vol:.035,dest:dl});AU.timer=setTimeout(chime,5000+Math.random()*4000)};
   AU.timer=setTimeout(chime,3000);ambLevel()}catch(e){}}
 function stopAmb(){if(!AU.amb)return;try{AU.amb.g.gain.setTargetAtTime(0,AU.ctx.currentTime,.3)}catch(e){}AU.amb=null;clearTimeout(AU.timer);clearTimeout(AU.ctimer);clearInterval(AU.itv)}
-function ambLevel(){if(!AU.amb||!AU.ctx)return;AU.amb.g.gain.setTargetAtTime(AU.muted?0:.5,AU.ctx.currentTime,.6)}
-function sndBtn(){let b=document.getElementById('snd');if(!b){b=document.createElement('button');b.id='snd';document.body.appendChild(b);b.addEventListener('click',e=>{e.stopPropagation();AU.on=!AU.on;lsSet('sabbat-son',AU.on?'1':'0');if(AU.on)startAmb();else stopAmb();sndBtn()})}b.textContent=AU.on?'♪ Ambiance : oui':'♪ Ambiance : non';b.setAttribute('aria-pressed',String(AU.on))}
+const YT_ID='3ecxZy8luDg',YT_VOL=35;
+window.onYouTubeIframeAPIReady=function(){if(!isHost)return;try{const d=document.createElement('div');d.id='ytbox';d.innerHTML='<div id="yt"></div>';document.body.appendChild(d);document.body.classList.add('yt');
+  AU.yt=new YT.Player('yt',{width:200,height:113,videoId:YT_ID,playerVars:{controls:0,disablekb:1,modestbranding:1,playsinline:1,rel:0},
+   events:{onReady:()=>{AU.ytOk=true;try{AU.yt.setVolume(YT_VOL)}catch(e){}if(AU.wantPlay)ambOn()},
+     onStateChange:e=>{if(e.data===0){try{AU.yt.seekTo(0);AU.yt.playVideo()}catch(x){}}},
+     onError:()=>{AU.ytOk=false;AU.ytFail=true;const b=document.getElementById('ytbox');if(b)b.remove();document.body.classList.remove('yt');if(AU.wantPlay)startAmb()}}})}catch(e){AU.ytFail=true}};
+function ambOn(){AU.wantPlay=true;if(AU.ytOk){try{if(AU.yt.getPlayerState()!==1)AU.yt.playVideo()}catch(e){}ambLevel()}else if(AU.ytFail||!window.YT||!window.YT.Player)startAmb()}
+function ambOff(){AU.wantPlay=false;if(AU.ytOk){try{AU.yt.pauseVideo()}catch(e){}}stopAmb()}
+function ambLevel(){if(AU.ytOk){try{AU.yt.setVolume(AU.muted?0:YT_VOL)}catch(e){}}if(!AU.amb||!AU.ctx)return;AU.amb.g.gain.setTargetAtTime(AU.muted?0:.5,AU.ctx.currentTime,.6)}
+function sndBtn(){let b=document.getElementById('snd');if(!b){b=document.createElement('button');b.id='snd';document.body.appendChild(b);b.addEventListener('click',e=>{e.stopPropagation();AU.on=!AU.on;lsSet('sabbat-son',AU.on?'1':'0');if(AU.on)ambOn();else ambOff();sndBtn()})}b.textContent=AU.on?'♪ Ambiance : oui':'♪ Ambiance : non';b.setAttribute('aria-pressed',String(AU.on))}
 
 /* ---------- Dessin des cartes : or fin sur fond nuit ---------- */
 const G='#d9b15f',N='#171226',FELL="'IM Fell DW Pica SC',Georgia,serif";
@@ -354,7 +365,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 13</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 14</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -425,7 +436,7 @@ function names(){S.cov.forEach((v,i)=>{const el=document.getElementById('cn'+i);
 app.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;
   if(!isHost)return playerClick(b);
-  ac();if(AU.on&&!AU.amb)startAmb();
+  ac();if(AU.on)ambOn();
   const act=b.dataset.act,c=Number(b.dataset.c),d=Number(b.dataset.d);
   if(act==='emb'){names();S.cov[c].e=(S.cov[c].e+1)%EMB.length}
   else if(act==='start'){names();S.ph='deck';clearAnswers()}
