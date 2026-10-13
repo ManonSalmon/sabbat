@@ -21,11 +21,28 @@
 html,body{min-height:100%}
 body{margin:0}
 [hidden]{display:none!important}
+#snd{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;font:700 13px var(--corps);color:var(--cendre);background:var(--voile);border:1px solid var(--trait);border-radius:20px;padding:8px 12px}
 #phones{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .qr{display:block;width:150px;background:#fff;padding:6px;border-radius:4px}
 .qr svg{display:block;width:100%;height:auto}
 .meca{color:var(--laiton);font-size:clamp(26px,5.5vw,38px);text-align:center}
 .meca-tag{font:400 clamp(18px,3.8vw,25px)/1 var(--titre);color:#1b1408;background:var(--laiton);padding:7px 13px;border-radius:3px;letter-spacing:.03em}
+.cov.tour{background:#3b2c14;border-color:var(--laiton);box-shadow:0 0 0 2px var(--laiton) inset,0 0 22px #d2a85755}
+.cov.moi .nom{text-decoration:underline;text-underline-offset:3px}
+.tag-tour{align-self:flex-start;margin-top:3px;font:700 11px/1 var(--corps);letter-spacing:.1em;text-transform:uppercase;color:#1b1408;background:var(--laiton);padding:4px 6px;border-radius:2px}
+.cov .adj{align-items:center}
+.cov .adj input,input.cnt{width:56px;height:32px;padding:2px 4px;text-align:center;font:700 16px var(--corps);color:var(--os);background:var(--nuit);border:1px solid var(--trait);border-radius:3px}
+.juge.ko{border-color:var(--sang);background:#3a1d22}
+.juge .rp{font-size:16px;color:var(--os);overflow-wrap:anywhere}
+.juge .gn{font:700 18px/1 var(--corps)}
+.juge.ok .gn{color:var(--sauge)}.juge.ko .gn{color:#e07a74}
+.res{display:flex;flex-direction:column;gap:8px}
+.resl{display:flex;justify-content:space-between;gap:10px;align-items:baseline;border:1px solid;border-radius:4px;padding:10px 12px}
+.resl span{min-width:0;overflow-wrap:anywhere}
+.resl.ok{border-color:var(--sauge);background:#22352a}.resl.ko{border-color:var(--sang);background:#3a1d22}
+.resl b{white-space:nowrap;font-size:18px}.resl.ok b{color:var(--sauge)}.resl.ko b{color:#e07a74}
+.big-res{font:400 clamp(26px,7vw,40px)/1.1 var(--titre);text-align:center;padding:14px;border-radius:4px;border:1px solid}
+.big-res.ok{background:#22352a;color:var(--sauge);border-color:var(--sauge)}.big-res.ko{background:#3a1d22;color:#e07a74;border-color:var(--sang)}
 .tag-ok{color:var(--sauge);font-weight:700;font-size:13px;white-space:nowrap}
 .btn.sel{border-color:var(--laiton);box-shadow:0 0 0 1px var(--laiton) inset}
 body{background:var(--nuit);color:var(--os);font:400 17px/1.45 var(--corps);
@@ -143,6 +160,40 @@ const ARC={
  dia:{n:'XV',nom:'Le Diable',sub:'Malédiction',svg:`<circle ${S1} cx="50" cy="50" r="44"/><polygon ${S1} points="50,90 26.5,17.6 88,62.4 12,62.4 73.5,17.6"/>`},
  rou:{n:'X',nom:'La Roue de Fortune',sub:'Coup du sort',svg:`<circle ${S1} cx="50" cy="50" r="38"/><circle ${S1} cx="50" cy="50" r="8"/><path ${S1} d="M50 12V88M12 50H88M23 23L77 77M77 23L23 77"/>`}
 };
+/* ---------- Sons (générés dans la page) ---------- */
+const AU={ctx:null,out:null,amb:null,on:true,muted:false,timer:null};
+try{AU.on=lsGet('sabbat-son')!=='0'}catch(e){}
+function ac(){try{if(!AU.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AU.ctx=new C();AU.out=AU.ctx.createGain();AU.out.gain.value=.9;AU.out.connect(AU.ctx.destination)}if(AU.ctx.state==='suspended')AU.ctx.resume();return AU.ctx}catch(e){return null}}
+function tone(f,t,d,o){o=o||{};const c=AU.ctx,os=c.createOscillator(),g=c.createGain();os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+(o.glide||d));if(o.det)os.detune.value=o.det;const v=o.vol==null?.2:o.vol,a=o.att||.008;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+d);let n=os;if(o.lp){const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=o.lp;os.connect(fl);n=fl}n.connect(g);g.connect(o.dest||AU.out);os.start(t);os.stop(t+d+.05)}
+function noise(t,d,o){o=o||{};const c=AU.ctx,len=Math.max(1,Math.floor(c.sampleRate*d)),buf=c.createBuffer(1,len,c.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<len;i++)ch[i]=Math.random()*2-1;const src=c.createBufferSource();src.buffer=buf;const fl=c.createBiquadFilter();fl.type=o.ft||'bandpass';fl.frequency.setValueAtTime(o.f||1000,t);if(o.to)fl.frequency.exponentialRampToValueAtTime(o.to,t+d);fl.Q.value=o.q||1;const g=c.createGain(),v=o.vol==null?.2:o.vol;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+(o.att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+d);src.connect(fl);fl.connect(g);g.connect(AU.out);src.start(t);src.stop(t+d+.05)}
+const SFX={
+ whoosh:t=>noise(t,.45,{f:1200,to:4000,q:.5,vol:.07,att:.18}),
+ pap:t=>{[[196,.14],[531,.05],[1062,.03]].forEach(([f,v])=>{tone(f,t,4.5,{vol:v,att:.02});tone(f*1.004,t,4.5,{vol:v*.6,att:.02})})},
+ lun:t=>[1568,1319,1175,988,784,659].forEach((f,i)=>{tone(f,t+i*.13,1.6,{vol:.12});tone(f*2,t+i*.13,.6,{vol:.03,type:'triangle'})}),
+ eto:t=>{tone(1047,t,3.2,{vol:.07,att:.25});tone(1568,t+.18,3,{vol:.05,att:.3});tone(2093,t+.35,2.4,{vol:.012,att:.4});tone(2096,t+.35,2.4,{vol:.012,att:.4})},
+ jug:t=>[[392,0],[294,.55]].forEach(([f,d])=>{tone(f,t+d,2.6,{vol:.09,att:.01});tone(f*2.76,t+d,1.2,{vol:.02,att:.01});tone(f*5.4,t+d,.5,{vol:.008,att:.01})}),
+ bat:t=>[587,740,880,1175].forEach((f,i)=>{tone(f,t+i*.24,2.2,{vol:.08,att:.015});tone(f*2,t+i*.24,.9,{vol:.012,att:.015})}),
+ mat:t=>[[1318,0],[1760,.11],[1568,.3],[2093,.42],[1760,.66]].forEach(([f,d])=>{tone(f,t+d,1.8,{vol:.045,att:.01});tone(f*2.01,t+d,.7,{vol:.008,att:.01})}),
+ dia:t=>{[65.4,69.3,98,138.6].forEach(f=>tone(f,t,2.8,{type:'sawtooth',vol:.07,att:.35,lp:700}));noise(t,2.6,{ft:'lowpass',f:140,vol:.25,att:.4})},
+ rou:t=>{let x=0,step=.035;for(let i=0;i<20;i++){noise(t+x,.03,{f:3200,q:4,vol:.25});x+=step;step*=1.13}tone(1319,t+x+.05,1.8,{vol:.15});tone(2637,t+x+.05,.8,{vol:.04})},
+ rev:t=>{tone(880,t,1.2,{vol:.1});tone(1320,t+.08,1.2,{vol:.07})},
+ roul:t=>{noise(t,2.4,{ft:'lowpass',f:200,to:900,vol:.06,att:1.8});[220,330,440,554].forEach((f,i)=>tone(f,t+1.9+i*.05,4,{vol:.05,att:.3}))}
+};
+function sfx(k,delay){const c=ac();if(!c||!SFX[k])return;try{SFX[k](c.currentTime+(delay||0)+.02)}catch(e){}}
+function pad(f,t,d,v,dest){const c=AU.ctx,o=c.createOscillator(),fl=c.createBiquadFilter(),g=c.createGain();o.type='triangle';o.frequency.value=f;o.detune.value=(Math.random()-.5)*8;fl.type='lowpass';fl.frequency.value=1400;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+2.5);g.gain.setValueAtTime(v,t+d-3);g.gain.linearRampToValueAtTime(0,t+d);o.connect(fl);fl.connect(g);g.connect(dest);o.start(t);o.stop(t+d+.1)}
+function startAmb(){const c=ac();if(!c||AU.amb)return;try{
+  const g=c.createGain();g.gain.value=0;g.connect(AU.out);
+  const dl=c.createDelay(1),fb=c.createGain(),wet=c.createGain();dl.delayTime.value=.42;fb.gain.value=.38;wet.gain.value=.55;dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(g);
+  AU.amb={g,dl,k:0};
+  const CH=[[220,261.6,329.6,440],[174.6,220,261.6,349.2],[196,246.9,293.7,392],[164.8,196,246.9,329.6]];
+  const chord=()=>{if(!AU.amb)return;const t=c.currentTime+.05;CH[AU.amb.k%CH.length].forEach((f,i)=>pad(f,t,10.5,i===3?.022:.04,g));AU.amb.k++;AU.ctimer=setTimeout(chord,8000)};
+  const N=[659,784,880,988,1047,1175,1319];
+  const chime=()=>{if(!AU.amb)return;const t=c.currentTime+.05,i=Math.floor(Math.random()*N.length);tone(N[i],t,3,{vol:.045,dest:dl});if(Math.random()<.5)tone(N[Math.max(0,i-1-Math.floor(Math.random()*2))],t+.45,3,{vol:.035,dest:dl});AU.timer=setTimeout(chime,2500+Math.random()*3500)};
+  chord();AU.timer=setTimeout(chime,2000);ambLevel()}catch(e){}}
+function stopAmb(){if(!AU.amb)return;try{AU.amb.g.gain.setTargetAtTime(0,AU.ctx.currentTime,.3)}catch(e){}AU.amb=null;clearTimeout(AU.timer);clearTimeout(AU.ctimer)}
+function ambLevel(){if(!AU.amb||!AU.ctx)return;AU.amb.g.gain.setTargetAtTime(AU.muted?0:.5,AU.ctx.currentTime,.6)}
+function sndBtn(){let b=document.getElementById('snd');if(!b){b=document.createElement('button');b.id='snd';document.body.appendChild(b);b.addEventListener('click',e=>{e.stopPropagation();AU.on=!AU.on;lsSet('sabbat-son',AU.on?'1':'0');if(AU.on)startAmb();else stopAmb();sndBtn()})}b.textContent=AU.on?'♪ Ambiance : oui':'♪ Ambiance : non';b.setAttribute('aria-pressed',String(AU.on))}
+
 /* ---------- Dessin des cartes : or fin sur fond nuit ---------- */
 const G='#d9b15f',N='#171226',FELL="'IM Fell DW Pica SC',Georgia,serif";
 const xy=(cx,cy,r,a)=>[(cx+r*Math.cos(a)).toFixed(1),(cy+r*Math.sin(a)).toFixed(1)];
@@ -191,32 +242,32 @@ function cardSvg(k){const a=ARC[k],nom=a.nom.toUpperCase(),C='#f6ead0';
  t: qcm (r = index de la bonne option) | libre (r = réponses acceptées) | defi | sort (malédiction, cible à choisir)
  p: points, x: explication affichée à la révélation, s: secondes */
 const CARDS=[
- {a:'pap',t:'qcm',p:1,q:"Quelle fête celtique est l'ancêtre d'Halloween ?",o:['Beltane','Samhain','Yule'],r:1,x:"Samhain marquait la fin des récoltes et l'entrée dans la saison sombre."},
+ {a:'pap',t:'qcm',p:1,q:"Fin octobre, les Celtes fêtaient la fin des récoltes et l'entrée dans la saison sombre, quand le monde des morts se rapprochait des vivants. Comment s'appelait cette fête, ancêtre d'Halloween ?",o:['Beltane','Samhain','Yule'],r:1,x:"Samhain marquait la fin des récoltes et l'entrée dans la saison sombre."},
  {a:'pap',t:'qcm',p:2,q:"Combien de cartes compte un jeu de tarot divinatoire complet ?",o:['22','56','78','108'],r:2,x:"22 arcanes majeurs et 56 arcanes mineurs."},
- {a:'pap',t:'libre',p:1,q:"Comment appelle-t-on l'étoile à cinq branches utilisée comme symbole de protection ?",r:['pentagramme','pentacle'],rt:'Le pentagramme',x:"Inscrit dans un cercle, on parle de pentacle."},
- {a:'pap',t:'qcm',p:1,q:"Que signifie le titre du Malleus Maleficarum, célèbre manuel de chasse aux sorcières du XVe siècle ?",o:['Le Miroir des maléfices','Le Marteau des sorcières','Le Livre des malédictions'],r:1,x:"Publié vers 1486, il a été réimprimé pendant deux siècles."},
- {a:'pap',t:'qcm',p:1,q:"Dans la wicca, comment s'appelle le recueil où l'on consigne sorts et rituels ?",o:['Le Livre des Ombres','Le Nécronomicon','Le Codex Gigas'],r:0,x:"Le Nécronomicon est une invention de Lovecraft."},
- {a:'pap',t:'libre',p:2,q:"Quel écrivain public parisien du XIVe siècle passe pour avoir découvert la pierre philosophale ?",r:['flamel'],rt:'Nicolas Flamel',x:"Sa réputation d'alchimiste est née bien après sa mort."},
+ {a:'pap',t:'libre',p:1,q:"Tracée d'un seul trait, cette étoile à cinq branches orne les grimoires et les portes pour éloigner les mauvais esprits. Comment l'appelle-t-on ?",r:['pentagramme','pentacle'],rt:'Le pentagramme',x:"Inscrit dans un cercle, on parle de pentacle."},
+ {a:'pap',t:'qcm',p:1,q:"En 1486, deux inquisiteurs publient un manuel pour reconnaître et poursuivre les sorcières : le Malleus Maleficarum. Que signifie ce titre latin ?",o:['Le Miroir des maléfices','Le Marteau des sorcières','Le Livre des malédictions'],r:1,x:"Publié vers 1486, il a été réimprimé pendant deux siècles."},
+ {a:'pap',t:'qcm',p:1,q:"Dans la wicca, religion néopaïenne née au XXe siècle, chaque sorcière tient un carnet personnel de sorts, de rituels et de recettes. Comment s'appelle-t-il ?",o:['Le Livre des Ombres','Le Nécronomicon','Le Codex Gigas'],r:0,x:"Le Nécronomicon est une invention de Lovecraft."},
+ {a:'pap',t:'libre',p:2,q:"Il a vraiment existé : écrivain public et libraire à Paris au XIVe siècle, il est devenu après sa mort une légende de l'alchimie, réputé avoir fabriqué la pierre philosophale. Qui est-ce ?",r:['flamel'],rt:'Nicolas Flamel',x:"Sa réputation d'alchimiste est née bien après sa mort."},
 
  {a:'lun',t:'libre',p:1,q:"Dans quel conte une sorcière vit-elle dans une maison en pain d'épices ?",r:['hansel','gretel'],rt:'Hansel et Gretel',x:""},
- {a:'lun',t:'qcm',p:1,q:"Sur quoi repose l'isba de Baba Yaga ?",o:['Des pattes de poulet','Le dos d\'une tortue','Des roues de charrette'],r:0,x:"Elle tourne sur elle-même pour faire face au visiteur."},
- {a:'lun',t:'libre',p:1,q:"Quelle fée est la demi-sœur du roi Arthur ?",r:['morgan'],rt:'Morgane',x:""},
- {a:'lun',t:'qcm',p:2,q:"Dans le folklore écossais, en quel animal se transforme une selkie ?",o:['Un cygne','Un phoque','Un renard'],r:1,x:"Elle quitte sa peau de phoque pour prendre forme humaine."},
- {a:'lun',t:'libre',p:1,q:"Quelle forêt bretonne est associée à Merlin et à la fée Viviane ?",r:['broceliande'],rt:'Brocéliande',x:""},
+ {a:'lun',t:'qcm',p:1,q:"Baba Yaga, la sorcière des contes russes, vit au fond de la forêt dans une isba, une maison en bois. Sur quoi repose sa maison ?",o:['Des pattes de poulet','Le dos d\'une tortue','Des roues de charrette'],r:0,x:"Elle tourne sur elle-même pour faire face au visiteur."},
+ {a:'lun',t:'libre',p:1,q:"Dans la légende arthurienne, cette fée magicienne, élève de Merlin, est aussi la demi-sœur du roi Arthur. Qui est-elle ?",r:['morgan'],rt:'Morgane',x:""},
+ {a:'lun',t:'qcm',p:2,q:"Dans les légendes d'Écosse et d'Irlande, les selkies retirent leur peau d'animal pour prendre forme humaine sur le rivage. De quel animal ont-elles la peau ?",o:['Un cygne','Un phoque','Un renard'],r:1,x:"Elle quitte sa peau de phoque pour prendre forme humaine."},
+ {a:'lun',t:'libre',p:1,q:"Selon la légende, c'est dans cette forêt de Bretagne que la fée Viviane a enfermé Merlin. Laquelle ?",r:['broceliande'],rt:'Brocéliande',x:""},
  {a:'lun',t:'qcm',p:1,q:"Dans La Belle au bois dormant, sur quoi la princesse se pique-t-elle le doigt ?",o:['Une épine de rose','Un fuseau','Une aiguille à broder'],r:1,x:"Le fuseau d'un rouet."},
 
- {a:'eto',t:'libre',p:1,q:"Arcane : comment s'appelait Jinx quand elle était enfant ?",r:['powder'],rt:'Powder',x:"C'est Silco qui l'élève sous le nom de Jinx."},
- {a:'eto',t:'qcm',p:1,q:"Dans Kiki la petite sorcière, quel animal l'accompagne ?",o:['Un hibou','Un chat noir','Un crapaud'],r:1,x:"Il s'appelle Jiji."},
- {a:'eto',t:'libre',p:1,q:"Dans Le Seigneur des Anneaux, combien d'anneaux ont été donnés aux Hommes ?",r:['neuf','9'],rt:'Neuf',x:"Trois pour les Elfes, sept pour les Nains, neuf pour les Hommes."},
- {a:'pap',t:'qcm',p:2,q:"Dans Sorcières, Mona Chollet consacre un chapitre à chacune de ces figures de femmes, sauf une. Laquelle ?",o:['La femme indépendante','La femme sans enfant','La femme âgée','La femme artiste'],r:3,x:"Les trois autres sont, selon elle, les héritières des cibles des chasses aux sorcières."},
- {a:'eto',t:'libre',p:1,q:"Le Seigneur des Anneaux : comment s'appelle le plus ancien des Ents, celui qui porte Merry et Pippin ?",r:['sylvebarbe','barbebois','treebeard','fangorn'],rt:'Sylvebarbe',x:"Barbebois dans la nouvelle traduction, Treebeard en VO."},
- {a:'eto',t:'qcm',p:1,q:"Charmed : quel est le premier pouvoir de Piper ?",o:['Figer le temps','La télékinésie','Les prémonitions'],r:0,x:"La télékinésie pour Prue, les prémonitions pour Phoebe."},
- {a:'eto',t:'libre',p:1,q:"The Witcher : comment s'appelle la jument de Geralt ?",r:['ablette','roach'],rt:'Ablette (Roach en VO)',x:""},
+ {a:'eto',t:'libre',p:1,q:"Dans la série animée Arcane, tirée du jeu vidéo League of Legends, la tireuse imprévisible Jinx portait un autre prénom quand elle était enfant, aux côtés de sa sœur Vi. Lequel ?",r:['powder'],rt:'Powder',x:"C'est Silco qui l'élève sous le nom de Jinx."},
+ {a:'eto',t:'qcm',p:1,q:"Dans Kiki la petite sorcière, l'animé de Miyazaki, quel animal accompagne la jeune sorcière ?",o:['Un hibou','Un chat noir','Un crapaud'],r:1,x:"Il s'appelle Jiji."},
+ {a:'eto',t:'libre',p:1,q:"Dans Le Seigneur des Anneaux, combien d'anneaux de pouvoir ont été forgés pour les Hommes ?",r:['neuf','9'],rt:'Neuf',x:"Trois pour les Elfes, sept pour les Nains, neuf pour les Hommes."},
+ {a:'pap',t:'qcm',p:2,q:"En 2018, la journaliste Mona Chollet publie Sorcières, la puissance invaincue des femmes. Elle y montre que certaines figures de femmes, autrefois visées par les chasses aux sorcières, dérangent encore aujourd'hui. Laquelle de ces quatre n'en fait pas partie ?",o:['La femme indépendante','La femme sans enfant','La femme âgée','La femme artiste'],r:3,x:"Les trois autres sont, selon elle, les héritières des cibles des chasses aux sorcières."},
+ {a:'eto',t:'libre',p:1,q:"Dans Le Seigneur des Anneaux, comment s'appelle l'Ent le plus ancien, qui recueille Merry et Pippin ?",r:['sylvebarbe','barbebois','treebeard','fangorn'],rt:'Sylvebarbe',x:"Barbebois dans la nouvelle traduction, Treebeard en VO."},
+ {a:'eto',t:'qcm',p:1,q:"Dans Charmed, les trois sœurs Halliwell ont chacune un pouvoir magique. Quel est celui de Piper au début de la série ?",o:['Figer le temps','La télékinésie','Les prémonitions'],r:0,x:"La télékinésie pour Prue, les prémonitions pour Phoebe."},
+ {a:'eto',t:'libre',p:1,q:"Dans The Witcher, Geralt de Riv donne toujours le même nom à sa monture, quel que soit le cheval. Lequel ?",r:['ablette','roach'],rt:'Ablette (Roach en VO)',x:""},
  {a:'eto',t:'qcm',p:1,q:"Dans quelle ville Buffy chasse-t-elle les vampires ?",o:['Mystic Falls','Sunnydale','Riverdale'],r:1,x:""},
- {a:'eto',t:'qcm',p:2,q:"Hérédité : quel démon la secte cherche-t-elle à invoquer ?",o:['Pazuzu','Paimon','Belzébuth'],r:1,x:"Pazuzu, c'est celui de L'Exorciste."},
- {a:'eto',t:'qcm',p:1,q:"Fourth Wing : quelle créature chevauchent les cavaliers de Basgiath ?",o:['Des griffons','Des dragons','Des phénix'],r:1,x:""},
- {a:'eto',t:'libre',p:2,q:"Un palais d'épines et de roses : de quelle cour Rhysand est-il le Grand Seigneur ?",r:['nuit','night'],rt:'La Cour de la Nuit',x:""},
- {a:'eto',t:'libre',p:2,q:"Le Château ambulant : comment s'appelle le démon du feu ?",r:['calcifer'],rt:'Calcifer',x:""},
+ {a:'eto',t:'qcm',p:2,q:"Dans le film d'horreur Hérédité (Ari Aster, 2018), une secte prépare dans l'ombre la venue d'un roi des enfers. Quel démon veut-elle invoquer ?",o:['Pazuzu','Paimon','Belzébuth'],r:1,x:"Pazuzu, c'est celui de L'Exorciste."},
+ {a:'eto',t:'qcm',p:1,q:"Dans la romantasy Fourth Wing de Rebecca Yarros, Violet entre à l'école militaire de Basgiath pour devenir cavalière. Quelle créature les cavaliers chevauchent-ils ?",o:['Des griffons','Des dragons','Des phénix'],r:1,x:""},
+ {a:'eto',t:'libre',p:2,q:"Dans la saga Un palais d'épines et de roses de Sarah J. Maas, le monde des fées de Prythian est divisé en cours. De laquelle Rhysand est-il le Grand Seigneur ?",r:['nuit','night'],rt:'La Cour de la Nuit',x:""},
+ {a:'eto',t:'libre',p:2,q:"Dans Le Château ambulant de Miyazaki, le château du magicien Hauru avance grâce à un petit démon du feu qui vit dans la cheminée. Comment s'appelle-t-il ?",r:['calcifer'],rt:'Calcifer',x:""},
 
  {a:'jug',t:'qcm',p:1,q:"« Au Moyen Âge, des animaux ont été convoqués à de vrais procès, avec un avocat. »",o:['Réel','Inventé'],r:0,x:"Réel. Des cochons, des rats et même des charançons ont eu leur procès."},
  {a:'jug',t:'qcm',p:1,q:"« Le mot abracadabra apparaît déjà dans un traité de médecine romain. »",o:['Réel','Inventé'],r:0,x:"Réel. Au IIIe siècle, on le prescrivait en amulette contre la fièvre."},
@@ -241,7 +292,7 @@ const CARDS=[
  {a:'rou',t:'defi',s:0,q:"La Roue vous sourit : 3 points tombent du ciel pour le coven qui a tiré.",x:"La Grande Prêtresse ajuste les scores."},
  {a:'rou',t:'defi',s:0,q:"La Roue s'emballe : le coven qui a tiré échange son score avec le dernier. S'il est déjà dernier, il gagne 2 points.",x:"La Grande Prêtresse ajuste les scores."}
 ];
-const FINAL={a:'rou',t:'libre',p:0,q:"Hors des huit arcanes du jeu de ce soir, citez six autres arcanes majeurs du tarot.",r:[],rt:"L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, La Maison Dieu, Le Soleil, Le Monde",x:"Il en faut six sur ces quatorze pour gagner sa mise."};
+const FINAL={a:'rou',t:'libre',p:0,q:"Citez au moins huit arcanes majeurs du tarot. Ceux du jeu de ce soir comptent aussi.",r:[],rt:"Le Mat, Le Bateleur, La Papesse, L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Roue de Fortune, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, Le Diable, La Maison Dieu, L'Étoile, La Lune, Le Soleil, Le Jugement, Le Monde",x:"Il y en a 22. Au moins huit bonnes réponses pour gagner sa mise, puis 1 point par arcane au-delà de huit."};
 const EMB=['☾','✶','♄','☿','♆','♃'];
 const PLAYLIST=["Harry Potter, Hedwig's Theme","Charmed, générique (How Soon Is Now?)","Le Château ambulant, Merry-Go-Round of Life","Buffy contre les vampires, générique","The Witcher, Toss a Coin to Your Witcher","Le Seigneur des Anneaux, Concerning Hobbits"];
 
@@ -260,6 +311,11 @@ function fresh(){
   return {ph:'setup',cov:[{n:'Coven de la Lune',e:0,s:0},{n:'Coven des Ronces',e:1,s:0},{n:'Coven du Corbeau',e:2,s:0}],
     order,drawn:order.map(()=>0),turn:0,cur:null,n:0,qid:Math.floor(Math.random()*1e6),ok:[false,false,false],ans:{},curse:null,bets:[0,0,0],fin:false,tEnd:0};
 }
+const ARCS=[['papesse','pretresse'],['imperatrice'],['empereur'],['pape','hierophante'],['amoureux','amoureuse','amants'],['chariot'],['justice'],['hermite','ermite'],['roue','fortune'],['force'],['pendu'],['mort','sans nom'],['temperance'],['diable'],['maison dieu','maison','tour'],['etoile'],['lune'],['soleil'],['jugement'],['monde'],['bateleur','magicien'],['mat','fou']];
+function countArc(a){if(a==null||a==='')return 0;const seen=new Set();String(a).split(/[,;\n\/]+|\s+et\s+/).forEach(ch=>{const n=' '+norm(ch)+' ';for(let i=0;i<ARCS.length;i++){if(ARCS[i].some(k=>n.includes(' '+k+' '))){seen.add(i);break}}});return seen.size}
+function gainOf(i){if(S.fin)return S.ok[i]?(S.bets[i]||0)+Math.max(0,((S.cnt||[])[i]||0)-8):-(S.bets[i]||0);const k=card();return S.ok[i]?k.p+(i===S.turn?1:0):0}
+function ansText(i){const a=S.ans[i];if(a==null||a==='')return '';const c=card();return c.t==='qcm'?(L[a]||'')+' · '+(c.o[a]||''):String(a)}
+function startFinal(){sfx('roul');S.fin=true;S.ph='bets';S.bets=[0,0,0];S.betOk=[false,false,false];S.cnt=[0,0,0];if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({bet:null}).catch(()=>{})})}
 function card(){return S.fin?FINAL:CARDS[S.order[S.cur]]}
 function judge(c,a){
   if(a==null||a==='')return false;
@@ -273,13 +329,14 @@ function covBar(adj){
   return `<div class="covens">`+S.cov.map((c,i)=>{
     const cur=S.curse&&S.curse.c===i;
     const here=(S.ph==='q'&&S.ans[i]!=null);
-    return `<div class="cov${S.turn===i&&!S.fin&&S.ph!=='end'?' tour':''}">
+    const tr=S.turn===i&&!S.fin&&!['setup','end','bets'].includes(S.ph);
+    return `<div class="cov${tr?' tour':''}">
       <span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${c.s}</span>
-      ${cur?`<span class="tag">Maudit : ${esc(S.curse.m)}</span>`:''}${here?`<span class="tag ok">A répondu</span>`:''}
-      ${adj?`<span class="adj"><button data-act="adj" data-c="${i}" data-d="-1" aria-label="Retirer un point à ${esc(c.n)}">−</button><button data-act="adj" data-c="${i}" data-d="1" aria-label="Ajouter un point à ${esc(c.n)}">+</button></span>`:''}
+      ${cur?`<span class="tag">Maudit : ${esc(S.curse.m)}</span>`:''}${here?`<span class="tag ok">A répondu</span>`:''}${tr?`<span class="tag-tour">${S.ph==='deck'?'À son tour':'A tiré la carte'}</span>`:''}
+      ${adj?`<span class="adj"><button data-act="adj" data-c="${i}" data-d="-1" aria-label="Retirer un point à ${esc(c.n)}">−</button><input type="number" inputmode="numeric" class="sc" data-c="${i}" value="${c.s}" aria-label="Score de ${esc(c.n)}"><button data-act="adj" data-c="${i}" data-d="1" aria-label="Ajouter un point à ${esc(c.n)}">+</button></span>`:''}
     </div>`}).join('')+`</div>`;
 }
-function head(c){const a=ARC[c.a];return `<div class="entete"><span class="row"><span class="meca-tag">${esc(S.fin?'Rituel final':a.sub)}</span><span class="eyebrow">${a.n} · ${esc(a.nom)}</span></span>${S.ph==='q'&&c.s!==0?`<span class="chrono" id="chrono"></span>`:''}</div>`}
+function head(c){const a=ARC[c.a];return `<div class="entete"><span class="row"><span class="meca-tag">${esc(S.fin?'Rituel final':a.sub)}</span><span class="eyebrow">${a.n} · ${esc(a.nom)}${S.fin?'':' · tirée par '+esc(S.cov[S.turn].n)}</span></span>${S.ph==='q'&&c.s!==0?`<span class="chrono" id="chrono"></span>`:''}</div>`}
 function optsHtml(c,rev){return c.t==='qcm'?`<div class="opts">`+c.o.map((o,i)=>`<div class="opt${rev&&i===c.r?' bonne':''}"><b>${L[i]}</b><span>${esc(o)}</span></div>`).join('')+`</div>`:''}
 
 function render(){
@@ -290,7 +347,7 @@ function render(){
       <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 8</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 12</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -308,9 +365,10 @@ function render(){
     const c=card();
     h=covBar(false)+`<div class="epreuve">${head(c)}<p class="question">${esc(c.q)}</p>${optsHtml(c,true)}
       <div class="rep"><strong>${esc(answerText(c))}</strong>${c.x?`<span class="sub">${esc(c.x)}</span>`:''}</div>
-      <span class="eyebrow">Qui a juste ? Touchez pour corriger</span>
-      <div class="juges">`+S.cov.map((v,i)=>{const a=S.ans[i];const at=a==null?'':c.t==='qcm'?(L[a]||''):a;
-        return `<button class="juge${S.ok[i]?' ok':''}" data-act="ok" data-c="${i}" aria-pressed="${S.ok[i]}"><span>${EMB[v.e]} ${esc(v.n)}</span><small>${S.ok[i]?'Juste':'Faux'}${at!==''?' · « '+esc(at)+' »':''}${S.fin?' · mise '+S.bets[i]:''}</small></button>`}).join('')+`</div></div>
+      <span class="eyebrow">${S.fin?'Bonnes réponses : comptées automatiquement, à corriger si besoin':'Qui a juste ? Touchez pour corriger'}</span>
+      <div class="juges">`+S.cov.map((v,i)=>{const at=ansText(i),g=gainOf(i),gt=(g>0?'+':'')+g+' pt'+(Math.abs(g)>1?'s':'');
+        if(S.fin)return `<div class="juge ${S.ok[i]?'ok':'ko'}"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="rp">${at?esc(at):'Pas de réponse'}</span><label class="row">Bonnes réponses <input type="number" inputmode="numeric" class="cnt" data-c="${i}" value="${(S.cnt||[])[i]||0}" min="0" max="22"></label><small>Mise ${S.bets[i]||0}</small><span class="gn">${gt}</span></div>`;
+        return `<button class="juge ${S.ok[i]?'ok':'ko'}" data-act="ok" data-c="${i}" aria-pressed="${S.ok[i]}"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="rp">${at?'« '+esc(at)+' »':'Pas de réponse'}</span><span class="gn">${S.ok[i]?'Juste':'Faux'} · ${gt}</span></button>`}).join('')+`</div></div>
       <div class="barre"><span></span><button class="btn" data-act="valid">Valider les points</button></div>`;
   }else if(S.ph==='defi'){
     const c=card();const sort=c.t==='sort';
@@ -322,8 +380,8 @@ function render(){
       <div class="barre"><span class="sub">${sort?'':'Ajustez les scores avec + et −.'}</span><button class="btn" data-act="next">Carte suivante</button></div>`;
   }else if(S.ph==='bets'){
     h=covBar(false)+`<div class="epreuve"><span class="eyebrow">Rituel final</span><h2>Thème : le tarot</h2>
-      <p class="sub">Chaque coven annonce sa mise. Juste, il la gagne. Faux, il la perd.</p>
-      <div class="juges">`+S.cov.map((v,i)=>`<div class="juge"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="row"><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="-1" aria-label="Baisser la mise">−</button><b class="chrono" style="color:var(--laiton)">${S.bets[i]}</b><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="1" aria-label="Monter la mise">+</button></span></div>`).join('')+`</div></div>
+      <p class="sub">Chaque coven mise depuis son téléphone. Au moins huit bonnes réponses : il gagne sa mise, plus 1 point par réponse au-delà de huit. Sinon, il perd sa mise.</p>
+      <div class="juges">`+S.cov.map((v,i)=>`<div class="juge${S.betOk&&S.betOk[i]?' ok':''}"><span>${EMB[v.e]} ${esc(v.n)}</span><span class="row"><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="-1" aria-label="Baisser la mise">−</button><b class="chrono" style="color:var(--laiton)">${S.bets[i]}</b><button class="btn ghost small" data-act="bet" data-c="${i}" data-d="1" aria-label="Monter la mise">+</button></span><small>${S.betOk&&S.betOk[i]?'Mise scellée':'En attente du coven'}</small></div>`).join('')+`</div></div>
       <div class="barre"><button class="btn ghost small" data-act="back">Retour au jeu</button><button class="btn" data-act="finq">Poser la question</button></div>`;
   }else if(S.ph==='end'){
     const r=S.cov.map((c,i)=>({...c,i})).sort((a,b)=>b.s-a.s);
@@ -332,6 +390,7 @@ function render(){
       <div class="row"><button class="btn ghost" data-act="reset">Nouvelle partie</button></div>`;
   }
   app.innerHTML=h;
+  AU.muted=S.ph==='defi'&&card().a==='bat';ambLevel();sndBtn();
   if(S.ph==='q'&&card().s!==0)tick();
   if(document.getElementById('phones'))phones();
   lsSet('sabbat',JSON.stringify(S));push();
@@ -349,15 +408,16 @@ function phones(){
   let qr='';try{const q=qrcode(0,'M');q.addData(url);q.make();qr=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){}
   el.innerHTML=`<span class="qr">${qr}</span><span>Un téléphone par coven : scannez pour rejoindre.<br>${n} coven${n>1?'s':''} connecté${n>1?'s':''} sur 3.<br><small>${esc(url)}</small></span>`;
 }
-function clearAnswers(){if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({qid:null,a:null,pk:null}).catch(()=>{})})}
-function draw(s){if(S.drawn[s])return;S.drawn[s]=1;S.cur=s;S.n++;S.ph='flip';render()}
-function nextTurn(){S.turn=(S.turn+1)%3;S.cur=null;S.shown=false;S.ph=S.drawn.every(Boolean)?'bets':'deck';if(S.ph==='bets')S.fin=true}
+function clearAnswers(){if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({qid:null,a:null,pk:null,bet:null}).catch(()=>{})})}
+function draw(s){if(S.drawn[s])return;S.drawn[s]=1;S.cur=s;S.n++;S.ph='flip';render();sfx('whoosh',.45);sfx(card().a,1.35)}
+function nextTurn(){S.turn=(S.turn+1)%3;S.cur=null;S.shown=false;S.ph='deck';if(S.drawn.every(Boolean))startFinal()}
 function openQ(){S.qid++;S.ans={};S.ok=[false,false,false];S.ph='q';const c=card();S.tEnd=Date.now()+1000*(c.s||(c.t==='libre'?40:30))}
 
 function names(){S.cov.forEach((v,i)=>{const el=document.getElementById('cn'+i);if(el&&el.value.trim())v.n=el.value.trim()})}
 app.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;
   if(!isHost)return playerClick(b);
+  ac();if(AU.on&&!AU.amb)startAmb();
   const act=b.dataset.act,c=Number(b.dataset.c),d=Number(b.dataset.d);
   if(act==='emb'){names();S.cov[c].e=(S.cov[c].e+1)%EMB.length}
   else if(act==='start'){names();S.ph='deck';clearAnswers()}
@@ -366,22 +426,27 @@ app.addEventListener('click',e=>{
   else if(act==='skip')S.turn=(S.turn+1)%3;
   else if(act==='adj')S.cov[c].s+=d;
   else if(act==='open'){const k=card();if(k.t==='defi'||k.t==='sort'){S.ph='defi';S.shown=false}else openQ()}
-  else if(act==='reveal'){const k=card();S.cov.forEach((_,i)=>S.ok[i]=judge(k,S.ans[i]));S.ph='rev'}
-  else if(act==='ok')S.ok[c]=!S.ok[c];
+  else if(act==='reveal'){const k=card();if(S.fin){S.cnt=S.cov.map((_,i)=>countArc(S.ans[i]));S.ok=S.cnt.map(n=>n>=8)}else S.cov.forEach((_,i)=>S.ok[i]=judge(k,S.ans[i]));S.ph='rev';sfx('rev')}
+  else if(act==='ok'&&!S.fin)S.ok[c]=!S.ok[c];
   else if(act==='valid'){
-    if(S.fin){S.cov.forEach((v,i)=>v.s+=S.ok[i]?S.bets[i]:-S.bets[i]);S.ph='end'}
-    else{const k=card();S.cov.forEach((v,i)=>{if(S.ok[i])v.s+=k.p+(i===S.turn?1:0)});S.curse=null;nextTurn()}
+    const gs=S.cov.map((_,i)=>gainOf(i));S.cov.forEach((v,i)=>v.s+=gs[i]);
+    if(S.fin)S.ph='end';else{S.curse=null;nextTurn()}
   }
   else if(act==='curse')S.curse={c,m:card().m};
   else if(act==='show')S.shown=true;
   else if(act==='chrono'){S.tEnd=Date.now()+1000*card().s;render();return tick()}
   else if(act==='next')nextTurn();
-  else if(act==='final'){S.fin=true;S.ph='bets';S.bets=S.cov.map(v=>Math.max(1,Math.min(3,v.s)))}
+  else if(act==='final')startFinal();
   else if(act==='back'){S.fin=false;S.ph='deck'}
   else if(act==='bet'){const max=Math.max(2,S.cov[c].s);S.bets[c]=Math.max(0,Math.min(max,S.bets[c]+d))}
   else if(act==='finq')openQ();
   else if(act==='reset'||act==='reset2'){if(act==='reset2'&&!askReset){askReset=true}else{const old=S.cov;S=fresh();S.cov.forEach((c,i)=>{c.n=old[i].n;c.e=old[i].e});askReset=false;clearAnswers()}}
   render();
+});
+app.addEventListener('change',e=>{
+  if(!isHost)return;const t=e.target,c=Number(t.dataset.c);
+  if(t.classList.contains('sc')){S.cov[c].s=parseInt(t.value,10)||0;render()}
+  else if(t.classList.contains('cnt')){if(!S.cnt)S.cnt=[0,0,0];S.cnt[c]=Math.max(0,Math.min(22,parseInt(t.value,10)||0));S.ok[c]=S.cnt[c]>=8;render()}
 });
 
 /* ---------- Diffusion vers les téléphones (Firebase) ---------- */
@@ -391,7 +456,8 @@ function push(){
   pub.rdy=[0,1,2].map(c=>!!(PL&&PL[c]&&PL[c].nm));
   if(['q','rev','defi','flip'].includes(S.ph)){const c=card();pub.a=c.a;
     if(S.ph!=='flip'){pub.t=c.t;pub.q=c.q;if(c.o)pub.o=c.o}
-    if(S.ph==='rev'){pub.r=answerText(c);pub.ok=S.ok.map(Boolean)}}
+    if(S.ph==='rev'){pub.r=answerText(c);pub.ok=S.ok.map(Boolean);pub.gain=S.cov.map((_,i)=>gainOf(i));pub.ans=S.cov.map((_,i)=>ansText(i).slice(0,160))}}
+  if(S.ph==='bets'){pub.bets=S.bets.map(n=>n||0);pub.bok=(S.betOk||[false,false,false]).map(Boolean)}
   db.ref(base+'/g').set(pub).catch(()=>{});
 }
 function hostPlayers(){
@@ -405,18 +471,20 @@ function hostPlayers(){
   for(let cv=0;cv<3;cv++){
     const pr=PL&&PL[cv];if(!pr)continue;
     if(S.ph==='deck'&&pr.pk&&pr.pk.n===S.n&&cv===S.turn&&Number.isInteger(pr.pk.s)&&S.drawn[pr.pk.s]===0)return draw(pr.pk.s);
-    if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,240);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
+    if(S.ph==='bets'&&Number.isInteger(pr.bet)){const v=Math.max(0,Math.min(Math.max(2,S.cov[cv].s),pr.bet));if(!S.betOk)S.betOk=[false,false,false];if(S.bets[cv]!==v||!S.betOk[cv]){S.bets[cv]=v;S.betOk[cv]=true;ch=true}}
+    if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,400);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
   }
   if(ch||nc)render();else phones();
 }
 
 /* ---------- Vue coven (téléphone) ---------- */
-let P={cv:null,sent:-1,sig:'',named:false,e:0,draft:null};
+let P={cv:null,sent:-1,sig:'',named:false,e:0,draft:null,bet:null,betOk:false};
 function game(){return pubG}
 function renderPlayer(force){
   const g=game();
   const pn=document.getElementById('pn');if(pn){P.draft=pn.value;if(!force&&document.activeElement===pn)return}
-  const sig=JSON.stringify([g,P.cv,P.sent,P.named,P.e]);if(!force&&sig===P.sig)return;P.sig=sig;
+  if(g&&g.ph!=='bets'){P.bet=null;P.betOk=false}
+  const sig=JSON.stringify([g,P.cv,P.sent,P.named,P.e,P.bet,P.betOk]);if(!force&&sig===P.sig)return;P.sig=sig;
   let h='';
   if(!db)h=`<div class="col"><h1>Le Sabbat des Arcanes</h1><p class="sub">Ce téléphone ne peut pas rejoindre la partie. Suivez le jeu sur l'écran et répondez à voix haute.</p></div>`;
   else if(!g)h=`<div class="col"><h1>Le Sabbat des Arcanes</h1><p class="sub">En attente de la Grande Prêtresse…</p></div>`;
@@ -424,24 +492,28 @@ function renderPlayer(force){
   else if(!P.named&&g.ph==='setup')h=`<div class="col"><span class="eyebrow">Coven ${P.cv+1}</span><h2>Choisissez un nom et un emblème</h2><input type="text" id="pn" maxlength="28" value="${esc(P.draft!=null?P.draft:'')}" placeholder="Nom du coven" autocomplete="off"><div class="row">`+EMB.map((e,i)=>`<button class="btn ghost${P.e===i?' sel':''}" data-act="pemb" data-e="${i}" aria-pressed="${P.e===i}" aria-label="Emblème ${i+1}" style="font-size:22px;min-width:52px">${e}</button>`).join('')+`</div><button class="btn" data-act="pok">Valider</button><button class="btn ghost small" data-act="leave">Changer de coven</button></div>`;
   else{
     const me=g.cov[P.cv];
-    h=`<div class="covens">`+g.cov.map((c,i)=>`<div class="cov${i===P.cv?' tour':''}"><span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${Number(c.s)||0}</span>${i===P.cv?'<span class="tag ok">Vous</span>':''}</div>`).join('')+`</div>`;
+    const trn=i=>i===g.turn&&!g.fin&&!['setup','end','bets'].includes(g.ph);
+    h=`<div class="covens">`+g.cov.map((c,i)=>`<div class="cov${trn(i)?' tour':''}${i===P.cv?' moi':''}"><span class="nom">${EMB[c.e]} ${esc(c.n)}</span><span class="pts">${Number(c.s)||0}</span>${i===P.cv?'<span class="tag ok">Vous</span>':''}${trn(i)?`<span class="tag-tour">${g.ph==='deck'?'À son tour':'A tiré la carte'}</span>`:''}</div>`).join('')+`</div>`;
     const a=ARC[g.a];const eb=a?`<span class="row"><span class="meca-tag">${esc(g.fin?'Rituel final':a.sub)}</span><span class="eyebrow">${a.n} · ${esc(a.nom)}</span></span>`:'';
     if(g.ph==='setup')h+=`<p class="sub">Coven prêt. La Grande Prêtresse va lancer la partie.</p><div class="row"><button class="btn ghost small" data-act="edit">Modifier</button></div>`;
     else if(g.ph==='deck'){
       if(g.turn===P.cv)h+=`<h2>À vous de tirer</h2><div class="deck">`+String(g.drawn).split('').map((d,i)=>d==='1'?`<div class="dos vide"></div>`:`<button class="dos" data-act="pick" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>`;
-      else h+=`<p class="sub">${esc(g.cov[g.turn]?g.cov[g.turn].n:'')} tire une carte.</p>`;
+      else h+=`<h2>${g.cov[g.turn]?EMB[g.cov[g.turn].e]+' '+esc(g.cov[g.turn].n):''} tire une carte</h2><p class="sub">Regardez l'écran.</p>`;
     }
     else if(g.ph==='flip')h+=a?`<div class="autel"><div class="flip"><div class="in"><div class="f dos"></div><div class="f face">${cardSvg(g.a)}</div></div></div><h2 class="meca">${esc(a.sub)}</h2></div>`:'';
     else if(g.ph==='q'){
       h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p>`;
       if(P.sent===g.qid)h+=`<p class="sub">Réponse scellée. Regardez l'écran.</p>`;
       else if(g.t==='qcm')h+=`<div class="opts">`+(g.o||[]).map((o,i)=>`<button class="opt" data-act="ans" data-v="${i}"><b>${L[i]}</b><span>${esc(o)}</span></button>`).join('')+`</div>`;
-      else h+=`${g.fin?`<textarea id="pa" maxlength="240" rows="5" placeholder="Vos six arcanes, séparés par des virgules"></textarea>`:`<input type="text" id="pa" maxlength="60" autocomplete="off" placeholder="Votre réponse">`}<button class="btn" data-act="send">Sceller la réponse</button>`;
+      else h+=`${g.fin?`<textarea id="pa" maxlength="400" rows="6" placeholder="Vos arcanes, séparés par des virgules"></textarea>`:`<input type="text" id="pa" maxlength="60" autocomplete="off" placeholder="Votre réponse">`}<button class="btn" data-act="send">Sceller la réponse</button>`;
       h+=`</div>`;
     }
-    else if(g.ph==='rev')h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p><div class="rep"><strong>${esc(g.r)}</strong><span class="sub">${g.ok&&g.ok[P.cv]?'Votre coven a juste.':'Pas cette fois.'}</span></div></div>`;
+    else if(g.ph==='rev'){const ok=g.ok&&g.ok[P.cv],gn=g.gain?Number(g.gain[P.cv])||0:0,pt=n=>(n>0?'+':'')+n+' pt'+(Math.abs(n)>1?'s':'');
+      h+=`<div class="epreuve">${eb}<div class="big-res ${ok?'ok':'ko'}">${ok?'Juste':'Raté'} · ${pt(gn)}</div><p class="question">${esc(g.q)}</p><div class="rep"><strong>${esc(g.r)}</strong></div><div class="res">`+g.cov.map((c,i)=>{const o=g.ok&&g.ok[i],gi=g.gain?Number(g.gain[i])||0:0,at=g.ans&&g.ans[i]?g.ans[i]:'';return `<div class="resl ${o?'ok':'ko'}"><span>${EMB[c.e]} ${esc(c.n)} · ${at?'« '+esc(at)+' »':'Pas de réponse'}</span><b>${pt(gi)}</b></div>`}).join('')+`</div></div>`}
     else if(g.ph==='defi')h+=`<div class="epreuve">${eb}<p class="question">${esc(g.q)}</p><p class="sub">Tout se passe dans la pièce.</p></div>`;
-    else if(g.ph==='bets')h+=`<h2>Rituel final</h2><p class="sub">Annoncez votre mise à la Grande Prêtresse. Vous avez ${Number(me.s)||0} points.</p>`;
+    else if(g.ph==='bets'){const sc=Number(me.s)||0,mx=Math.max(2,sc);if(P.bet==null)P.bet=Math.min(1,mx);
+      if(P.betOk&&g.bok&&g.bok[P.cv])h+=`<h2>Rituel final</h2><div class="big-res ok">Mise scellée : ${g.bets?g.bets[P.cv]:P.bet}</div><p class="sub">Thème : le tarot. Attendez la question.</p><div class="row"><button class="btn ghost small" data-act="bedit">Modifier ma mise</button></div>`;
+      else h+=`<h2>Rituel final</h2><p class="sub">Thème : le tarot. Au moins huit bonnes réponses : vous gagnez votre mise, plus 1 point par réponse au-delà de huit. Sinon, vous perdez votre mise.</p><p class="sub">Vous avez ${sc} points. Mise maximale : ${mx}.</p><div class="row" style="justify-content:center;gap:18px"><button class="btn ghost" data-act="pbet" data-d="-1" aria-label="Baisser la mise">−</button><b class="chrono" style="font-size:40px;color:var(--laiton)">${P.bet}</b><button class="btn ghost" data-act="pbet" data-d="1" aria-label="Monter la mise">+</button></div><button class="btn" data-act="pbetok">Sceller ma mise</button>`}
     else if(g.ph==='end')h+=`<h2>Le sabbat est clos</h2><p class="sub">Le couronnement est à l'écran.</p>`;
   }
   app.innerHTML=h;
@@ -454,9 +526,12 @@ function playerClick(b){
   else if(act==='pok'){const v=((document.getElementById('pn')||{}).value||'').trim();if(!v)return;P.draft=v;P.named=true;lsSet('sabbat-nm-'+code,'1');me().update({on:true,nm:v.slice(0,28),em:P.e}).catch(()=>{})}
   else if(act==='edit'&&g){P.named=false;P.draft=g.cov[P.cv]?g.cov[P.cv].n:'';P.e=g.cov[P.cv]?g.cov[P.cv].e:0}
   else if(act==='leave'){P.cv=null;P.named=false;lsSet('sabbat-cv-'+code,'')}
+  else if(act==='pbet'&&g){const mx=Math.max(2,Number(g.cov[P.cv].s)||0);P.bet=Math.max(0,Math.min(mx,(P.bet||0)+Number(b.dataset.d)))}
+  else if(act==='pbetok'&&g){P.betOk=true;me().update({bet:P.bet||0}).catch(()=>{})}
+  else if(act==='bedit'){P.betOk=false}
   else if(act==='pick'&&g)me().update({pk:{n:g.n,s:Number(b.dataset.s)}}).catch(()=>{});
   else if(act==='ans'&&g){P.sent=g.qid;me().update({qid:g.qid,a:Number(b.dataset.v)}).catch(()=>{})}
-  else if(act==='send'&&g){const v=(document.getElementById('pa')||{}).value||'';if(!v.trim())return;P.sent=g.qid;me().update({qid:g.qid,a:v.trim().slice(0,240)}).catch(()=>{})}
+  else if(act==='send'&&g){const v=(document.getElementById('pa')||{}).value||'';if(!v.trim())return;P.sent=g.qid;me().update({qid:g.qid,a:v.trim().slice(0,400)}).catch(()=>{})}
   renderPlayer(true);
 }
 
