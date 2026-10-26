@@ -68,7 +68,7 @@ textarea{font:inherit;color:var(--os);background:var(--nuit);border:1px solid va
 input[type=text]{font:inherit;color:var(--os);background:var(--nuit);border:1px solid var(--trait);border-radius:3px;padding:11px 12px;min-width:0;width:100%}
 
 /* covens */
-.covens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.covens{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
 .cov{border:1px solid var(--trait);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0;background:var(--voile)}
 .cov.tour{border-color:var(--laiton);box-shadow:0 0 0 1px var(--laiton) inset}
 .cov .nom{font-family:var(--titre);font-size:15px;overflow-wrap:anywhere;line-height:1.15}
@@ -115,7 +115,7 @@ button.dos:hover{transform:translateY(-4px)}
 .rep{border-left:3px solid var(--sauge);padding:6px 0 6px 14px}
 .rep strong{font:400 clamp(22px,4.6vw,32px)/1.2 var(--titre);color:var(--sauge);display:block}
 .chrono{font:700 22px/1 var(--corps);font-variant-numeric:tabular-nums;color:var(--cendre)}
-.juges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.juges{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .juge{border:1px solid var(--trait);border-radius:4px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0;min-height:64px}
 .juge.ok{border-color:var(--sauge);background:#22352a}
 .juge small{color:var(--cendre);overflow-wrap:anywhere}
@@ -312,6 +312,8 @@ const CARDS=[
 ];
 const FINAL={a:'rou',t:'libre',p:0,q:"Citez au moins huit arcanes majeurs du tarot. Ceux du jeu de ce soir comptent aussi.",r:[],rt:"Le Mat, Le Bateleur, La Papesse, L'Impératrice, L'Empereur, Le Pape, L'Amoureux, Le Chariot, La Justice, L'Hermite, La Roue de Fortune, La Force, Le Pendu, L'Arcane sans nom (La Mort), Tempérance, Le Diable, La Maison Dieu, L'Étoile, La Lune, Le Soleil, Le Jugement, Le Monde",x:"Il y en a 22. Au moins huit bonnes réponses pour gagner sa mise, puis 1 point par arcane au-delà de huit."};
 const EMB=['☾','✶','♄','☿','♆','♃'];
+const COVN=['Coven de la Lune','Coven des Ronces','Coven du Corbeau','Coven des Brumes','Coven du Chaudron','Coven de la Chouette'],CMIN=2,CMAX=6;
+const NC=()=>S.cov.length,IDX=()=>S.cov.map((_,i)=>i),F0=v=>S.cov.map(()=>v);
 const PLAYLIST=["Harry Potter, Hedwig's Theme","Charmed, générique (How Soon Is Now?)","Le Château ambulant, Merry-Go-Round of Life","Buffy contre les vampires, générique","The Witcher, Toss a Coin to Your Witcher","Le Seigneur des Anneaux, Concerning Hobbits"];
 
 /* ---------- Outils ---------- */
@@ -333,7 +335,7 @@ const ARCS=[['papesse','pretresse'],['imperatrice'],['empereur'],['pape','hierop
 function countArc(a){if(a==null||a==='')return 0;const seen=new Set();String(a).split(/[,;\n\/]+|\s+et\s+/).forEach(ch=>{const n=' '+norm(ch)+' ';for(let i=0;i<ARCS.length;i++){if(ARCS[i].some(k=>n.includes(' '+k+' '))){seen.add(i);break}}});return seen.size}
 function gainOf(i){if(S.fin)return S.ok[i]?(S.bets[i]||0)+Math.max(0,((S.cnt||[])[i]||0)-8):-(S.bets[i]||0);const k=card();return S.ok[i]?k.p+(i===S.turn?1:0):0}
 function ansText(i){const a=S.ans[i];if(a==null||a==='')return '';const c=card();return c.t==='qcm'?(L[a]||'')+' · '+(c.o[a]||''):String(a)}
-function startFinal(){sfx('roul');S.fin=true;S.ph='bets';S.bets=[0,0,0];S.betOk=[false,false,false];S.cnt=[0,0,0];if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({bet:null}).catch(()=>{})})}
+function startFinal(){sfx('roul');S.fin=true;S.ph='bets';S.bets=F0(0);S.betOk=F0(false);S.cnt=F0(0);if(db)IDX().forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({bet:null}).catch(()=>{})})}
 function card(){return S.fin?FINAL:CARDS[S.order[S.cur]]}
 function judge(c,a){
   if(a==null||a==='')return false;
@@ -360,12 +362,12 @@ function optsHtml(c,rev){return c.t==='qcm'?`<div class="opts">`+c.o.map((o,i)=>
 function render(){
   clearInterval(timer);let h='';
   if(S.ph==='setup'){
-    h=`<div class="col"><span class="eyebrow">Soirée du 30 · un jeu en trois covens</span><h1>Le Sabbat des Arcanes</h1>
+    h=`<div class="col"><span class="eyebrow">Soirée du 30 · un jeu en covens</span><h1>Le Sabbat des Arcanes</h1>
       <p class="sub">Chaque coven scanne le QR code, choisit son nom et son emblème, puis valide. Lancez quand tout le monde est prêt.</p></div>
-      <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`</div>
+      <div class="col">`+S.cov.map((c,i)=>`<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" data-act="emb" data-c="${i}" aria-label="Changer l'emblème" style="font-size:22px;min-width:52px">${EMB[c.e]}</button><input type="text" id="cn${i}" value="${esc(c.n)}" maxlength="28" aria-label="Nom du coven ${i+1}">${PL&&PL[i]&&PL[i].nm?'<span class="tag-ok">Prêt</span>':''}</div>`).join('')+`<div class="row"><button class="btn ghost small" data-act="addc" ${NC()>=CMAX?'disabled':''}>+ Ajouter un coven</button><button class="btn ghost small" data-act="delc" ${NC()<=CMIN?'disabled':''}>− Retirer le dernier coven</button><span class="sub">${NC()} covens</span></div></div>
             <details><summary>Règles en bref</summary><ul><li>Bonne réponse : 1 point, 2 pour les questions corsées.</li><li>Le coven qui a tiré la carte gagne 1 point de plus s'il a juste.</li><li>Sans téléphone connecté, les covens répondent à voix haute ou sur papier, et vous validez.</li><li>Quand il reste dix minutes, lancez le rituel final : chaque coven mise ses points.</li></ul></details>
       <div class="sub" id="phones"></div>
-      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 17</span></div>`;
+      <div class="row"><button class="btn" data-act="start">Ouvrir le sabbat</button><span class="sub">Version 18</span></div>`;
   }else if(S.ph==='deck'){
     h=covBar(true)+`<div class="col"><span class="eyebrow">Carte ${S.n+1}</span><h2>${EMB[S.cov[S.turn].e]} ${esc(S.cov[S.turn].n)}, tirez une carte</h2></div>
       <div class="deck">`+S.drawn.map((d,i)=>d?`<div class="dos vide"></div>`:`<button class="dos" data-act="draw" data-s="${i}" aria-label="Carte ${i+1}"></button>`).join('')+`</div>
@@ -423,14 +425,14 @@ function phones(){
   const el=document.getElementById('phones');if(!el)return;
   if(!db){el.textContent='Mode animatrice seule : les covens répondent à voix haute ou sur papier.';return}
   const url=location.origin+location.pathname+'?p='+code;
-  const n=[0,1,2].filter(c=>PL&&PL[c]&&PL[c].on).length;
+  const n=IDX().filter(c=>PL&&PL[c]&&PL[c].on).length;
   let qr='';try{const q=qrcode(0,'M');q.addData(url);q.make();qr=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){}
-  el.innerHTML=`<span class="qr">${qr}</span><span>Un téléphone par coven : scannez pour rejoindre.<br>${n} coven${n>1?'s':''} connecté${n>1?'s':''} sur 3.<br><small>${esc(url)}</small></span>`;
+  el.innerHTML=`<span class="qr">${qr}</span><span>Un téléphone par coven : scannez pour rejoindre.<br>${n} coven${n>1?'s':''} connecté${n>1?'s':''} sur ${NC()}.<br><small>${esc(url)}</small></span>`;
 }
-function clearAnswers(){if(db)[0,1,2].forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({qid:null,a:null,pk:null,bet:null}).catch(()=>{})})}
+function clearAnswers(){if(db)IDX().forEach(c=>{if(PL&&PL[c])db.ref(base+'/p/'+c).update({qid:null,a:null,pk:null,bet:null}).catch(()=>{})})}
 function draw(s){if(S.drawn[s])return;S.drawn[s]=1;S.cur=s;S.n++;S.ph='flip';render();sfx('whoosh',.45);sfx(card().a,1.35)}
-function nextTurn(){S.turn=(S.turn+1)%3;S.cur=null;S.shown=false;S.ph='deck';if(S.drawn.every(Boolean))startFinal()}
-function openQ(){S.qid++;S.ans={};S.ok=[false,false,false];S.ph='q';const c=card();S.tEnd=Date.now()+1000*(c.s||(c.t==='libre'?40:30))}
+function nextTurn(){S.turn=(S.turn+1)%NC();S.cur=null;S.shown=false;S.ph='deck';if(S.drawn.every(Boolean))startFinal()}
+function openQ(){S.qid++;S.ans={};S.ok=F0(false);S.ph='q';const c=card();S.tEnd=Date.now()+1000*(c.s||(c.t==='libre'?40:30))}
 
 function names(){S.cov.forEach((v,i)=>{const el=document.getElementById('cn'+i);if(el&&el.value.trim())v.n=el.value.trim()})}
 app.addEventListener('click',e=>{
@@ -439,10 +441,12 @@ app.addEventListener('click',e=>{
   ac();if(AU.on)ambOn();
   const act=b.dataset.act,c=Number(b.dataset.c),d=Number(b.dataset.d);
   if(act==='emb'){names();S.cov[c].e=(S.cov[c].e+1)%EMB.length}
-  else if(act==='start'){names();S.ph='deck';clearAnswers()}
+  else if(act==='start'){names();S.ok=F0(false);S.bets=F0(0);S.ph='deck';clearAnswers()}
   else if(act==='qr')showQR=!showQR;
+  else if(act==='addc'){names();if(NC()<CMAX){const i=NC();S.cov.push({n:COVN[i],e:i%EMB.length,s:0})}}
+  else if(act==='delc'){names();if(NC()>CMIN){const i=NC()-1;S.cov.pop();if(S.turn>=NC())S.turn=0;if(db)db.ref(base+'/p/'+i).remove().catch(()=>{})}}
   else if(act==='draw')return draw(Number(b.dataset.s));
-  else if(act==='skip')S.turn=(S.turn+1)%3;
+  else if(act==='skip')S.turn=(S.turn+1)%NC();
   else if(act==='adj')S.cov[c].s+=d;
   else if(act==='open'){const k=card();if(k.t==='defi'||k.t==='sort'){S.ph='defi';S.shown=false}else openQ()}
   else if(act==='reveal'){const k=card();if(S.fin){S.cnt=S.cov.map((_,i)=>countArc(S.ans[i]));S.ok=S.cnt.map(n=>n>=8)}else S.cov.forEach((_,i)=>S.ok[i]=judge(k,S.ans[i]));S.ph='rev';sfx('rev')}
@@ -459,38 +463,38 @@ app.addEventListener('click',e=>{
   else if(act==='back'){S.fin=false;S.ph='deck'}
   else if(act==='bet'){const max=Math.max(2,S.cov[c].s);S.bets[c]=Math.max(0,Math.min(max,S.bets[c]+d))}
   else if(act==='finq')openQ();
-  else if(act==='reset'||act==='reset2'){if(act==='reset2'&&!askReset){askReset=true}else{const old=S.cov;S=fresh();S.cov.forEach((c,i)=>{c.n=old[i].n;c.e=old[i].e});askReset=false;clearAnswers()}}
+  else if(act==='reset'||act==='reset2'){if(act==='reset2'&&!askReset){askReset=true}else{const old=S.cov;S=fresh();S.cov=old.map(c=>({n:c.n,e:c.e,s:0}));S.ok=F0(false);S.bets=F0(0);askReset=false;clearAnswers()}}
   render();
 });
 app.addEventListener('change',e=>{
   if(!isHost)return;const t=e.target,c=Number(t.dataset.c);
   if(t.classList.contains('sc')){S.cov[c].s=parseInt(t.value,10)||0;render()}
-  else if(t.classList.contains('cnt')){if(!S.cnt)S.cnt=[0,0,0];S.cnt[c]=Math.max(0,Math.min(22,parseInt(t.value,10)||0));S.ok[c]=S.cnt[c]>=8;render()}
+  else if(t.classList.contains('cnt')){if(!S.cnt)S.cnt=F0(0);S.cnt[c]=Math.max(0,Math.min(22,parseInt(t.value,10)||0));S.ok[c]=S.cnt[c]>=8;render()}
 });
 
 /* ---------- Diffusion vers les téléphones (Firebase) ---------- */
 function push(){
   if(!db||!isHost)return;
   const pub={ph:S.ph,turn:S.turn,n:S.n,qid:S.qid,fin:!!S.fin,cov:S.cov.map(c=>({n:c.n,e:c.e,s:c.s})),drawn:S.drawn.join('')};
-  pub.rdy=[0,1,2].map(c=>!!(PL&&PL[c]&&PL[c].nm));
+  pub.rdy=IDX().map(c=>!!(PL&&PL[c]&&PL[c].nm));
   if(['q','rev','defi','flip'].includes(S.ph)){const c=card();pub.a=c.a;
     if(S.ph!=='flip'){pub.t=c.t;pub.q=c.q;if(c.o)pub.o=c.o}
     if(S.ph==='rev'){pub.r=answerText(c);pub.ok=S.ok.map(Boolean);pub.gain=S.cov.map((_,i)=>gainOf(i));pub.ans=S.cov.map((_,i)=>ansText(i).slice(0,160))}}
-  if(S.ph==='bets'){pub.bets=S.bets.map(n=>n||0);pub.bok=(S.betOk||[false,false,false]).map(Boolean)}
+  if(S.ph==='bets'){pub.bets=S.bets.map(n=>n||0);pub.bok=(S.betOk||F0(false)).map(Boolean)}
   db.ref(base+'/g').set(pub).catch(()=>{});
 }
 function hostPlayers(){
   let nc=false;
   if(S.ph==='setup')names();
-  for(let cv=0;cv<3;cv++){const pr=PL&&PL[cv];if(!pr||!pr.nm)continue;
+  for(let cv=0;cv<NC();cv++){const pr=PL&&PL[cv];if(!pr||!pr.nm)continue;
     const nm=String(pr.nm).slice(0,28),em=(Number.isInteger(pr.em)&&pr.em>=0&&pr.em<EMB.length)?pr.em:S.cov[cv].e;
     if(S.cov[cv].n!==nm||S.cov[cv].e!==em){S.cov[cv].n=nm;S.cov[cv].e=em;nc=true}}
   if(S.ph==='setup')return render();
   let ch=false;
-  for(let cv=0;cv<3;cv++){
+  for(let cv=0;cv<NC();cv++){
     const pr=PL&&PL[cv];if(!pr)continue;
     if(S.ph==='deck'&&pr.pk&&pr.pk.n===S.n&&cv===S.turn&&Number.isInteger(pr.pk.s)&&S.drawn[pr.pk.s]===0)return draw(pr.pk.s);
-    if(S.ph==='bets'&&Number.isInteger(pr.bet)){const v=Math.max(0,Math.min(Math.max(2,S.cov[cv].s),pr.bet));if(!S.betOk)S.betOk=[false,false,false];if(S.bets[cv]!==v||!S.betOk[cv]){S.bets[cv]=v;S.betOk[cv]=true;ch=true}}
+    if(S.ph==='bets'&&Number.isInteger(pr.bet)){const v=Math.max(0,Math.min(Math.max(2,S.cov[cv].s),pr.bet));if(!S.betOk)S.betOk=F0(false);if(S.bets[cv]!==v||!S.betOk[cv]){S.bets[cv]=v;S.betOk[cv]=true;ch=true}}
     if(S.ph==='q'&&pr.qid===S.qid&&pr.a!=null){const a=typeof pr.a==='number'?pr.a:String(pr.a).slice(0,400);if(S.ans[cv]!==a){S.ans[cv]=a;ch=true}}
   }
   if(ch||nc)render();else phones();
